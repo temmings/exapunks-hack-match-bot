@@ -1,10 +1,12 @@
 import time
 import typing
+
 from PIL import Image
 
 from board import Board
-from icon import Icon, IconColorDict
+from icon import Icon, IconFileDict
 from solve import Solver
+from image import diff_rms
 
 
 class Point(object):
@@ -26,8 +28,7 @@ class Game(object):
         self.board = board
 
         # guess icon size (x, y)
-        self.icon_size = Point(60, 60)
-        #self.icon_size = Point(image.width // self.COLUMNS, image.height // self.ROWS)
+        self.icon_size = Point(image.width // self.COLUMNS, image.height // self.ROWS)
 
     @property
     def is_alive(self) -> bool:
@@ -43,12 +44,12 @@ class Game(object):
 
     def main_loop(self, func: typing.Callable):
         while self.is_alive:
-            self.board.rows = self._detect_board(self.image, self.board)
+            self.board.rows = self._detect_board(self.image)
             func()
             time.sleep(1 / self.FRAME_RATE)
             self.frame.count_up()
 
-    def _detect_board(self, image: Image, board: Board) -> list:
+    def _detect_board(self, image: Image) -> list:
         new_board = []
         for n in range(0, self.ROWS + 1):
             new_board.append(self._detect_column(image, n, self.COLUMNS))
@@ -68,11 +69,25 @@ class Game(object):
 
     @staticmethod
     def _detect_icon(image: Image) -> Icon:
+        # key: Icon, value: rms
+        rms_dict = {
+            k: diff_rms(image, Image.open(v)) for k, v in IconFileDict.items()
+        }
+        # RMS の一番小さいアイコンを候補とする
+        candidate = min(rms_dict.items(), key=lambda x: x[1])
+        if candidate[1] < 30:
+            return candidate[0]
+        return Icon.Empty
+
+    """
+    @staticmethod
+    def _detect_icon(image: Image) -> Icon:
         for icon, icon_rgb in IconColorDict.items():
             rgb = list(image.convert('RGB').getdata())
             if icon_rgb.value in rgb:
                 return icon
         return Icon.Empty
+    """
 
 
 class FrameCounter(object):

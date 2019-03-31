@@ -3,35 +3,46 @@ from enum import Enum
 
 class Icon(Enum):
     Empty = '.'
-    Green = '^'
-    Pink = '*'
-    Purple = '#'
-    Red = '!'
-    Yellow = '='
+    Green = 'g'
+    Pink = 'p'
+    Purple = 'P'
+    Red = 'r'
+    Yellow = 'y'
 
-    BombRed = 'r'
-    BombGreen = 'g'
-    BombPink = 'b'
-    BombPurple = 'p'
-    BombYellow = 'y'
-
-    Unknown = '?'
+    BombGreen = '^'
+    BombPink = '*'
+    BombPurple = '#'
+    BombRed = '!'
+    BombYellow = '='
 
 
 class IconRGBColor(Enum):
-    Green = (17, 177, 148) # (19, 188, 158), (22, 195, 161)
-    Pink = (226, 20, 166) # (211, 22, 118)
-    Purple = (23, 63, 181)
-    Red = (198, 22, 46) # (223, 38, 67), (248, 64, 98), (238, 62, 95)
-    Yellow = (218, 163, 63) # (220, 165, 66), (218, 164, 66)
+    """
+    探索範囲のピクセルに特定のRGBのピクセルが含まれているか？の判定に利用する
+    """
+    Green = (18, 182, 153)
+    Pink = (255, 177, 214)
+    Purple = (157, 94, 250)
+    Red = (255, 196, 183)
+    Yellow = (237, 165, 24)
 
-    BombPurple = (19, 20, 54)
+    BombGreen = (205, 233, 244)
+    BombPink = (213, 207, 226)
+    BombPurple = (137, 159, 172)
+    BombRed = (222, 251, 255)
+    BombYellow = (245, 181, 128)
 
 
 IconColorDict = {
-    IconRGBColor.Purple: Icon.Purple,
-    IconRGBColor.Yellow: Icon.Yellow,
-    IconRGBColor.Red: Icon.Red,
-    IconRGBColor.Green: Icon.Green,
-    IconRGBColor.Pink: Icon.Pink,
+    Icon.Green: IconRGBColor.Green,
+    Icon.Pink: IconRGBColor.Pink,
+    Icon.Purple: IconRGBColor.Purple,
+    Icon.Red: IconRGBColor.Red,
+    Icon.Yellow: IconRGBColor.Yellow,
+
+    Icon.BombGreen: IconRGBColor.BombGreen,
+    Icon.BombPink: IconRGBColor.BombPink,
+    Icon.BombPurple: IconRGBColor.BombPurple,
+    Icon.BombRed: IconRGBColor.BombRed,
+    Icon.BombYellow: IconRGBColor.BombYellow,
 }

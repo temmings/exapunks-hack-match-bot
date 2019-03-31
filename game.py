@@ -68,16 +68,10 @@ class Game(object):
 
     @staticmethod
     def _detect_icon(image: Image) -> Icon:
-        x = 11
-        y = 38
-        rgb = image.convert('RGB').getpixel((x, y))
-        # TODO: refactoring
-        margin = 53
-        for k, v in IconColorDict.items():
-            if k.value[0] - margin < rgb[0] < k.value[0] + margin and \
-                    k.value[1] - margin < rgb[1] < k.value[1] + margin and \
-                    k.value[2] - margin < rgb[2] < k.value[2] + margin:
-                return v
+        for icon, icon_rgb in IconColorDict.items():
+            rgb = list(image.convert('RGB').getdata())
+            if icon_rgb.value in rgb:
+                return icon
         return Icon.Empty
 
 

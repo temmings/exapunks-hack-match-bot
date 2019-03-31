@@ -7,17 +7,18 @@ from capture import Capture, WindowSize
 from solve import Solver
 
 DEBUG = True
+WINDOW_NAME = 'EXAPUNKS'
 
 
 def main():
-    capture = Capture('EXAPUNKS')
-    hwnd = win32gui.FindWindowEx(0, 0, 0, "EXAPUNKS")
+    capture = Capture(WINDOW_NAME)
+    hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
     win32gui.SetForegroundWindow(hwnd)
 
     if capture.window_size == WindowSize.HD_PLUS:
         # (x0, y0, x1, y1)
         game_window = (370, 138, 790, 700)
-        #score_window = (828, 251, 1237, 717)
+        # score_window = (828, 251, 1237, 717)
     else:
         raise NotImplemented()
 
@@ -25,6 +26,7 @@ def main():
     controller = Controller()
     solver = Solver(board, controller)
     game = Game(capture.crop(game_window), solver, board)
+    game.enable_debug()
     controller.start()
 
     # main loop

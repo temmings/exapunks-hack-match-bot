@@ -20,6 +20,8 @@ class Game(object):
     ROWS = 9
     COLUMNS = 7
 
+    debug = False
+
     def __init__(self, image: Image, solver: Solver, board: Board):
         self.frame = FrameCounter()
         self.prev_image = None
@@ -29,6 +31,9 @@ class Game(object):
 
         # guess icon size (x, y)
         self.icon_size = Point(image.width // self.COLUMNS, image.height // self.ROWS)
+
+    def enable_debug(self):
+        self.debug = True
 
     @property
     def is_alive(self) -> bool:
@@ -62,7 +67,8 @@ class Game(object):
                 i * self.icon_size.x, row_number * self.icon_size.y,
                 (i + 1) * self.icon_size.x, (row_number + 1) * self.icon_size.y
             ))
-            im_icon.save('capture/icon-%d.png' % i)
+            if self.debug:
+                im_icon.save('capture/icon-%d.png' % i)
             icon = self._detect_icon(im_icon)
             detect_cols.append(icon)
         return detect_cols

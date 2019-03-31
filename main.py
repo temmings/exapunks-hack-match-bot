@@ -1,43 +1,60 @@
+#!/usr/bin/env python
+# coding: utf-8
+#
+import time
 import win32gui
 
 from board import Board
-from controller import Controller
+from character import Character
+from win32controller import Win32Controller
 from game import Game
 from capture import Capture, WindowSize
-from solve import Solver
+from solver import HandmadeSolver
 
-DEBUG = True
+DEBUG_SAVE_BOARD = False
+DEBUG_PRINT_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'
 
 
 def main():
     capture = Capture(WINDOW_NAME)
-    hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
-    win32gui.SetForegroundWindow(hwnd)
 
     if capture.window_size == WindowSize.HD_PLUS:
         # (x0, y0, x1, y1)
-        game_window = (370, 138, 790, 700)
+        game_window_position = (370, 138, 790, 700)
         # score_window = (828, 251, 1237, 717)
     else:
         raise NotImplemented()
 
     board = Board(Game.ROWS, Game.COLUMNS)
-    controller = Controller()
-    solver = Solver(board, controller)
-    game = Game(capture.crop(game_window), solver, board)
+    controller = Win32Controller(0.020)
+    solver = HandmadeSolver()
+    solver.enable_debug()
+    char = Character(controller)
+    game = Game(capture.crop(game_window_position), solver, board, char)
     game.enable_debug()
+
+    hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
+    win32gui.SetForegroundWindow(hwnd)
+
+    time.sleep(1)
     controller.start()
 
     # main loop
     def proc():
-        im = capture.crop(game_window)
-        game.load_image(im)
-        if DEBUG:
-            im.save('capture/game_frame_%05d.png' % game.current_frame)
-            print('current frame: %d' % game.current_frame)
+        game_window = capture.crop(game_window_position)
+        game.load_image(game_window)
+
+        print('current frame: %d (frame rate: %d fps)' % (game.current_frame, game.FRAME_RATE))
+        print('prev time: %f' % game.frame.prev_time)
+        print('curr time: %f' % game.frame.current_time)
+
+        if DEBUG_SAVE_BOARD:
+            game_window.save('capture/game_frame_%05d.png' % game.current_frame)
+
+        if DEBUG_PRINT_BOARD:
             print('current board:')
-            game.board.print_board()
+            game.board.print()
             print()
 
     game.main_loop(proc)

@@ -1,10 +1,9 @@
 from enum import Enum
 
-from PIL import Image
-
 
 class Icon(Enum):
     Empty = '.'
+
     Green = 'g'
     Pink = 'p'
     Purple = 'P'
@@ -18,16 +17,40 @@ class Icon(Enum):
     BombYellow = '='
 
 
-IconFileDict = {
-    Icon.Green: Image.open('test/icon_green.png'),
-    Icon.Pink: Image.open('test/icon_pink.png'),
-    Icon.Purple: Image.open('test/icon_purple.png'),
-    Icon.Red: Image.open('test/icon_red.png'),
-    Icon.Yellow: Image.open('test/icon_yellow.png'),
+class IconType(Enum):
+    """
+    アイコンの区分を表す。
+    同一のアイコンが連結した場合に消滅する数を値として持つ。
+    """
+    Normal = 4
+    Bomb = 2
 
-    Icon.BombGreen: Image.open('test/icon_bomb_green.png'),
-    Icon.BombPink: Image.open('test/icon_bomb_pink.png'),
-    Icon.BombPurple: Image.open('test/icon_bomb_purple.png'),
-    Icon.BombRed: Image.open('test/icon_bomb_red.png'),
-    Icon.BombYellow: Image.open('test/icon_bomb_yellow.png'),
+
+IconTypeDict = {
+    IconType.Normal: (
+        Icon.Green,
+        Icon.Pink,
+        Icon.Purple,
+        Icon.Red,
+        Icon.Yellow),
+    IconType.Bomb: (
+        Icon.BombGreen,
+        Icon.BombPink,
+        Icon.BombPurple,
+        Icon.BombRed,
+        Icon.BombYellow),
+}
+
+IconFileDict = {
+    Icon.Green: 'test/icon_green.png',
+    Icon.Pink: 'test/icon_pink.png',
+    Icon.Purple: 'test/icon_purple.png',
+    Icon.Red: 'test/icon_red.png',
+    Icon.Yellow: 'test/icon_yellow.png',
+
+    Icon.BombGreen: 'test/icon_bomb_green.png',
+    Icon.BombPink: 'test/icon_bomb_pink.png',
+    Icon.BombPurple: 'test/icon_bomb_purple.png',
+    Icon.BombRed: 'test/icon_bomb_red.png',
+    Icon.BombYellow: 'test/icon_bomb_yellow.png',
 }

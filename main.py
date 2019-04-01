@@ -9,7 +9,7 @@ from character import Character
 from win32controller import Win32Controller
 from game import Game
 from capture import Capture, WindowSize
-from solver import HandmadeSolver
+from solver import RandomSolver
 
 DEBUG_SAVE_BOARD = False
 DEBUG_PRINT_BOARD = True
@@ -28,7 +28,7 @@ def main():
 
     board = Board(Game.ROWS, Game.COLUMNS)
     controller = Win32Controller(0.020)
-    solver = HandmadeSolver()
+    solver = RandomSolver()
     solver.enable_debug()
     char = Character(controller)
     game = Game(capture.crop(game_window_position), solver, board, char)

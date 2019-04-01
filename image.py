@@ -1,28 +1,30 @@
-import math
-import operator
-from functools import reduce
+import numpy as np
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 
-def diff_rms(a: Image, b: Image) -> float:
+def get_rmse(a: Image, b: Image) -> float:
     """
+    Calculates the root mean square error (RSME) between two images
+    reference: https://stackoverflow.com/questions/3098406/root-mean-square-difference-between-two-images-using-python-and-pil
     >>> a = Image.open('test/icon_green.png')
     >>> b = Image.open('test/icon_green.png')
-    >>> diff_rms(a, b)
+    >>> get_rmse(a, b)
     0.0
     >>> a = Image.open('test/icon_green.png')
     >>> b = Image.open('test/icon_red.png')
-    >>> rms = diff_rms(a, b)
+    >>> rms = get_rmse(a, b)
     >>> 0.0 < rms
     True
     """
-    h1 = a.histogram()
-    h2 = b.histogram()
+    # noinspection PyTypeChecker
+    errors = np.asarray(ImageChops.difference(a, b)) / 255
+    return np.sqrt(np.mean(np.square(errors)))
 
-    # Root-Mean-Square Difference: 二乗平均平方根
-    rms = math.sqrt(
-        reduce(operator.add,
-               map(lambda a, b: (a - b) ** 2, h1, h2)
-               ) / len(h1))
-    return rms
+
+def diff_rmse(h1: list, h2: list) -> float:
+    """
+    Calculates the root mean square error (RSME) between two images
+    """
+    errors = (np.asarray(h1) - np.asarray(h2)) / 255
+    return np.sqrt(np.mean(np.square(errors)))

@@ -1,5 +1,6 @@
 import time
 import typing
+from queue import Queue
 
 from PIL import Image
 
@@ -7,14 +8,9 @@ from board import Board
 from character import Character
 from frame_counter import FrameCounter
 from icon import Icon, IconFileDict
+from point import Point
 from solver import Solver
-from image import diff_rms
-
-
-class Point(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+from image import diff_rmse, get_rmse
 
 
 class Game(object):
@@ -24,9 +20,10 @@ class Game(object):
 
     debug = False
 
+    prev_captures = Queue()
+
     def __init__(self, image: Image, solver: Solver, board: Board, char: Character):
         self.frame = FrameCounter()
-        self.prev_image = None
         self.image = image
         self.solver = solver
         self.board = board
@@ -35,6 +32,15 @@ class Game(object):
         # guess icon size (x, y)
         #self.icon_size = Point(image.width // self.COLUMNS, image.height // self.ROWS)
         self.icon_size = Point(60, 60)
+
+        # 処理時間を稼ぐため、アイコンのヒストグラムを先に取得しておく
+        self.icon_histogram_dict = {
+            k: Image.open(v).histogram() for k, v in IconFileDict.items()
+        }
+
+        # 5世代のキャプチャ画像を取り出せるようにしておく
+        for _ in range(0, 5):
+            self.prev_captures.put(None)
 
     def main_loop(self, callback: typing.Callable):
         while self.is_alive:
@@ -51,9 +57,12 @@ class Game(object):
 
     @property
     def is_alive(self) -> bool:
-        if self.prev_image is None:
+        # 直前のキャプチャを比較すると状態が同一なことがあるため、
+        # キューに数世代前のキャプチャを持っておき、それと比較する
+        prev_image = self.prev_captures.get()
+        if not prev_image:
             return True
-        return 0.0 < diff_rms(self.prev_image, self.image)
+        return 0.0 < get_rmse(prev_image, self.image)
 
     @property
     def current_frame(self) -> int:
@@ -63,12 +72,12 @@ class Game(object):
         self.debug = True
 
     def load_image(self, image: Image):
-        self.prev_image = self.image
+        self.prev_captures.put(self.image)
         self.image = image
 
     def _detect_board(self, image: Image) -> list:
         new_board = []
-        for n in range(0, self.ROWS + 1):
+        for n in range(0, self.ROWS):
             new_board.append(self._detect_column(image, n))
         return new_board
 
@@ -81,26 +90,23 @@ class Game(object):
             y1 = y0 + self.icon_size.y
 
             im_icon = image.crop((x0, y0, x1, y1))
-            #if self.debug:
-            #    filename = 'capture/icon-%d-%d.png' % (row_index, n)
-            #    im_icon.save(filename)
+            if self.debug:
+                filename = 'capture/icon-%d-%d.png' % (row_index, n)
+                im_icon.save(filename)
             icon = self._detect_icon(im_icon)
             detect_cols.append(icon)
         return detect_cols
 
-    memo = {}
     def _detect_icon(self, image: Image) -> Icon:
-        """
-        TODO: めっちゃホットスポット
-        """
-
+        h1 = image.histogram()
         # key: Icon, value: rms
-        rms_dict = {
-            k: diff_rms(image, v) for k, v in IconFileDict.items()
+        # TODO: ホットスポット。 200～300ms くらい掛かっている
+        rmse_dict = {
+            k: diff_rmse(h1, v) for k, v in self.icon_histogram_dict.items()
         }
-        # RMS の一番小さいアイコンを候補とする
-        # 30 を超えているものは該当なしとして空白とする(値は適当)
-        candidate = min(rms_dict.items(), key=lambda x: x[1])
-        if candidate[1] < 30:
+        # RMSEで画像を比較し、一番近しいアイコンを採用する
+        # 0.08(値は適当)を超えているものは該当なしとして空白とする
+        candidate = min(rmse_dict.items(), key=lambda x: x[1])
+        if candidate[1] < 0.08:
             return candidate[0]
         return Icon.Empty

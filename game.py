@@ -39,7 +39,7 @@ class Game(object):
         }
 
         # 5世代のキャプチャ画像を取り出せるようにしておく
-        for _ in range(0, 5):
+        for _ in range(5):
             self.prev_captures.put(None)
 
     def main_loop(self, callback: typing.Callable):
@@ -77,13 +77,13 @@ class Game(object):
 
     def _detect_board(self, image: Image) -> list:
         new_board = []
-        for n in range(0, self.ROWS):
-            new_board.append(self._detect_column(image, n))
+        map(new_board.append,
+            [self._detect_column(image, n) for n in range(self.ROWS)])
         return new_board
 
     def _detect_column(self, image: Image, row_index: int) -> list:
         detect_cols = []
-        for n in range(0, self.COLUMNS):
+        for n in range(self.COLUMNS):
             x0 = self.icon_size.x * n
             y0 = self.icon_size.y * row_index
             x1 = x0 + self.icon_size.x
@@ -107,6 +107,6 @@ class Game(object):
         # RMSEで画像を比較し、一番近しいアイコンを採用する
         # 0.08(値は適当)を超えているものは該当なしとして空白とする
         candidate = min(rmse_dict.items(), key=lambda x: x[1])
-        if candidate[1] < 0.08:
-            return candidate[0]
-        return Icon.Empty
+        if 0.08 < candidate[1]:
+            return Icon.Empty
+        return candidate[0]

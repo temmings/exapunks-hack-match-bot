@@ -16,7 +16,7 @@ class TestHandmadeSolver(TestCase):
             [Icon.Yellow, Icon.Green],
             [Icon.BombYellow, Icon.Red],
         ])
-        self.assertEquals(
+        self.assertEqual(
             (None, []),
             self.solver.find_bomb(self.board))
 
@@ -25,7 +25,7 @@ class TestHandmadeSolver(TestCase):
             [Icon.Yellow, Icon.BombYellow],
             [Icon.BombYellow, Icon.Red],
         ])
-        self.assertEquals(
+        self.assertEqual(
             (Icon.BombYellow, [Point(1, 0), Point(0, 1)]),
             self.solver.find_bomb(self.board))
 

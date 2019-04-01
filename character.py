@@ -3,10 +3,10 @@ from icon import Icon
 
 
 class Character(object):
-    MIN_POSITION = 0
-    MAX_POSITION = 6
-    # position range (0, 6)
-    __position = 3
+    MIN_POSITION = -3
+    MAX_POSITION = 3
+    # position range (-3, 3)
+    __position = 0
     __having_icon = None
 
     def __init__(self, controller: Controller):

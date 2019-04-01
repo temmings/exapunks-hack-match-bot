@@ -1,53 +1,56 @@
 import operator
+import numpy as np
 from functools import reduce
 
 from point import Point
-from icon import Icon
+from icon import Icon, IconToStringDict
 
 
 class Board(object):
     """
     ゲームのボードを表現する。
     """
-    def __init__(self, row_number: int, column_number: int):
-        self.rows = self.init_board(row_number, column_number)
+    def __init__(self, rows: int, columns: int):
+        self.__board = self.__init_board(rows, columns)
 
     @staticmethod
-    def init_board(row_number: int, column_number: int) -> list:
-        column = [Icon.Empty for _ in range(0, column_number)]
-        rows = [column for _ in range(0, row_number)]
-        return rows
+    def __init_board(rows: int, columns: int) -> list:
+        return np.full((rows, columns), Icon.Empty).tolist()[0:]
 
-    def update(self, rows: list):
-        self.rows = rows
+    def update(self, new_board: list):
+        self.__board = new_board
 
     def print(self):
-        for i, y in enumerate(self.rows):
+        for i, y in enumerate(self.__board):
             print('%d: ' % i, end='')
             for x in y:
-                print(x.value, end='')
+                print(IconToStringDict[x], end='')
             print()
 
     def get_icon(self, x, y) -> Icon:
-        return self.rows[y][x]
+        return self.__board[y][x]
 
     def get_rows(self, amount):
-        return self.rows[0:amount]
+        return self.__board[0:amount]
 
     def get_joined_rows(self, amount):
-        return reduce(operator.add, self.rows[0:amount])
+        return reduce(operator.add, self.__board[0:amount])
 
     def get_reversed_rows(self, amount):
-        return reversed(self.rows)[0:amount]
+        return reversed(self.__board)[0:amount]
 
     def get_joined_reversed_rows(self, amount):
-        return reduce(operator.add, reversed(self.rows)[0:amount])
+        return reduce(operator.add, reversed(self.__board)[0:amount])
 
     def get_positions(self, icon: Icon) -> list:
         result = []
-        for y, row in enumerate(self.rows):
+        for y, row in enumerate(self.__board):
             for x, item in enumerate(row):
                 if item == icon:
                     result.append(Point(x, y))
         return result
+
+    def get_surface(self, depth=0) -> list:
+        pass
+
 

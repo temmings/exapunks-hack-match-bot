@@ -3,10 +3,10 @@ from icon import Icon
 
 
 class Character(object):
-    MIN_POSITION = -3
-    MAX_POSITION = 3
-    # position range (-3, 3)
-    __position = 0
+    MIN_POSITION = 0
+    MAX_POSITION = 6
+    # position range (0, 6)
+    __position = 3
     __having_icon = None
 
     def __init__(self, controller: Controller):
@@ -21,14 +21,14 @@ class Character(object):
         return self.__having_icon
 
     def left(self):
-        #assert(self.MIN_POSITION < self.position)
+        assert(self.MIN_POSITION < self.position)
         if self.position == self.MIN_POSITION:
             return
         self.__position -= 1
         self.controller.left()
 
     def right(self):
-        #assert(self.position < self.MAX_POSITION)
+        assert(self.position < self.MAX_POSITION)
         if self.position == self.MAX_POSITION:
             return
         self.__position += 1
@@ -46,3 +46,11 @@ class Character(object):
 
     def swap(self):
         self.controller.swap()
+
+    def go_position(self, destination):
+        while self.position != destination:
+            if self.position < destination:
+                self.right()
+            else:
+                self.left()
+

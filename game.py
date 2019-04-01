@@ -1,4 +1,3 @@
-import time
 import typing
 from queue import Queue
 
@@ -14,7 +13,6 @@ from image import diff_rmse, get_rmse
 
 
 class Game(object):
-    FRAME_RATE = 60
     ROWS = 9
     COLUMNS = 7
 
@@ -47,7 +45,6 @@ class Game(object):
             self.board.update(self._detect_board(self.image))
             self.solver.solve(self.board, self.char)
             callback()
-            time.sleep(1.0 / self.FRAME_RATE)
             self.frame.count_up()
         self.trace('game over.')
 
@@ -68,6 +65,10 @@ class Game(object):
     def current_frame(self) -> int:
         return self.frame.current
 
+    @property
+    def process_time(self) -> int:
+        return self.frame.process_time
+
     def enable_debug(self):
         self.debug = True
 
@@ -77,8 +78,8 @@ class Game(object):
 
     def _detect_board(self, image: Image) -> list:
         new_board = []
-        map(new_board.append,
-            [self._detect_column(image, n) for n in range(self.ROWS)])
+        for n in range(self.ROWS):
+            new_board.insert(0, self._detect_column(image, n))
         return new_board
 
     def _detect_column(self, image: Image, row_index: int) -> list:
@@ -105,8 +106,8 @@ class Game(object):
             k: diff_rmse(h1, v) for k, v in self.icon_histogram_dict.items()
         }
         # RMSEで画像を比較し、一番近しいアイコンを採用する
-        # 0.08(値は適当)を超えているものは該当なしとして空白とする
+        # 0.10(値は適当)を超えているものは該当なしとして空白とする
         candidate = min(rmse_dict.items(), key=lambda x: x[1])
-        if 0.08 < candidate[1]:
+        if 0.10 < candidate[1]:
             return Icon.Empty
         return candidate[0]

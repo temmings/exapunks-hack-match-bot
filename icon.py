@@ -1,6 +1,7 @@
-from enum import IntEnum
+from enum import IntEnum, unique
 
 
+@unique
 class Icon(IntEnum):
     Empty = 0
 

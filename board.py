@@ -9,8 +9,11 @@ from icon import Icon, IconToStringDict
 class Board(object):
     """
     ゲームのボードを表現する。
+    実際のゲーム画面とは上下が逆転した形で扱う。
     """
     def __init__(self, rows: int, columns: int):
+        self.rows = rows
+        self.columns = columns
         self.__board = self.__init_board(rows, columns)
 
     @staticmethod
@@ -21,8 +24,8 @@ class Board(object):
         self.__board = new_board
 
     def print(self):
-        for i, y in enumerate(self.__board):
-            print('%d: ' % i, end='')
+        for i, y in enumerate(reversed(self.__board), start=1):
+            print('%d: ' % (self.rows - i), end='')
             for x in y:
                 print(IconToStringDict[x], end='')
             print()
@@ -50,7 +53,11 @@ class Board(object):
                     result.append(Point(x, y))
         return result
 
-    def get_surface(self, depth=0) -> list:
-        pass
-
-
+    def get_surface(self) -> list:
+        result = [Icon.Empty] * self.columns
+        for i in range(self.columns):
+            for row in self.__board:
+                if row[i] != Icon.Empty:
+                    result[i] = row[i]
+                    break
+        return result

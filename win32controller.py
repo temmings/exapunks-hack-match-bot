@@ -44,3 +44,4 @@ class Win32Controller(Controller):
         PressKey(code.value)
         time.sleep(self.release_wait_second)
         ReleaseKey(code.value)
+        time.sleep(self.release_wait_second)

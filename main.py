@@ -9,7 +9,7 @@ from character import Character
 from win32controller import Win32Controller
 from game import Game
 from capture import Capture, WindowSize
-from solver import RandomSolver
+from solver import RandomSolver, HandmadeSolver
 
 DEBUG_SAVE_BOARD = False
 DEBUG_PRINT_BOARD = True
@@ -28,7 +28,8 @@ def main():
 
     board = Board(Game.ROWS, Game.COLUMNS)
     controller = Win32Controller(0.020)
-    solver = RandomSolver()
+    #solver = RandomSolver()
+    solver = HandmadeSolver()
     solver.enable_debug()
     char = Character(controller)
     game = Game(capture.crop(game_window_position), solver, board, char)
@@ -45,9 +46,8 @@ def main():
         game_window = capture.crop(game_window_position)
         game.load_image(game_window)
 
-        print('current frame: %d (frame rate: %d fps)' % (game.current_frame, game.FRAME_RATE))
-        print('prev time: %f' % game.frame.prev_time)
-        print('curr time: %f' % game.frame.current_time)
+        print('current frame: %d' % game.current_frame)
+        print('process time: %f' % game.process_time)
 
         if DEBUG_SAVE_BOARD:
             game_window.save('capture/game_frame_%05d.png' % game.current_frame)

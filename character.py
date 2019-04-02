@@ -1,5 +1,4 @@
-from controller import Controller
-from icon import Icon
+from board import Board
 
 
 class Character(object):
@@ -9,8 +8,8 @@ class Character(object):
     __position = 3
     __having_icon = None
 
-    def __init__(self, controller: Controller):
-        self.controller = controller
+    def __init__(self, board: Board):
+        self.board = board
 
     @property
     def position(self) -> int:
@@ -22,35 +21,28 @@ class Character(object):
 
     def left(self):
         assert(self.MIN_POSITION < self.position)
-        if self.position == self.MIN_POSITION:
-            return
         self.__position -= 1
-        self.controller.left()
 
     def right(self):
         assert(self.position < self.MAX_POSITION)
-        if self.position == self.MAX_POSITION:
-            return
         self.__position += 1
-        self.controller.right()
 
-    def grab(self, icon: Icon):
+    def grab_icon(self):
         assert(self.having_icon is None)
+        icon = self.board.pop_icon(self.position)
         self.__having_icon = icon
-        self.controller.pop()
 
-    def throw(self):
+    def throw_icon(self):
         assert(self.having_icon is not None)
+        self.board.push_icon(self.position)
         self.__having_icon = None
-        self.controller.push()
 
     def swap(self):
-        self.controller.swap()
+        self.board.swap_icon(self.position)
 
     def go_position(self, destination):
-        while self.position != destination:
-            if self.position < destination:
-                self.right()
-            else:
-                self.left()
-
+        assert(self.MIN_POSITION <= destination <= self.MAX_POSITION)
+        while self.position < destination:
+            self.right()
+        while self.position > destination:
+            self.left()

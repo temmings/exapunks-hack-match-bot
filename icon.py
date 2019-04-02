@@ -17,6 +17,30 @@ class Icon(IntEnum):
     BombRed = 256
     BombYellow = 512
 
+    @classmethod
+    def to_char(cls, icon):
+        return {
+            cls.Empty: '.',
+
+            cls.Green: 'g',
+            cls.Pink: 'p',
+            cls.Purple: 'P',
+            cls.Red: 'r',
+            cls.Yellow: 'y',
+
+            cls.BombGreen: '^',
+            cls.BombPink: '*',
+            cls.BombPurple: '#',
+            cls.BombRed: '!',
+            cls.BombYellow: '=',
+        }[icon]
+
+    def __str__(self):
+        return self.to_char(self)
+
+    def __repr__(self):
+        return 'Icon<%s, %s, %d>' % (self.name, self.to_char(self), self.value)
+
 
 class IconType(IntEnum):
     """
@@ -26,22 +50,6 @@ class IconType(IntEnum):
     Normal = 4
     Bomb = 2
 
-
-IconToStringDict = {
-    Icon.Empty: '.',
-
-    Icon.Green: 'g',
-    Icon.Pink: 'p',
-    Icon.Purple: 'P',
-    Icon.Red: 'r',
-    Icon.Yellow: 'y',
-
-    Icon.BombGreen: '^',
-    Icon.BombPink: '*',
-    Icon.BombPurple: '#',
-    Icon.BombRed: '!',
-    Icon.BombYellow: '=',
-}
 
 IconTypeDict = {
     IconType.Normal: (

@@ -2,9 +2,10 @@ import time
 
 
 class FrameCounter(object):
-    current = 0
-    prev_time = 0
-    process_time = 0
+    def __init__(self):
+        self.current = 0
+        self.prev_time = time.process_time()
+        self.process_time = 0
 
     def count_up(self) -> int:
         self.current += 1

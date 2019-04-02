@@ -1,9 +1,6 @@
-import operator
 import numpy as np
-from functools import reduce
 
-from point import Point
-from icon import Icon, IconToStringDict
+from icon import Icon
 
 
 class Board(object):
@@ -11,53 +8,55 @@ class Board(object):
     ゲームのボードを表現する。
     実際のゲーム画面とは上下が逆転した形で扱う。
     """
-    def __init__(self, rows: int, columns: int):
-        self.rows = rows
-        self.columns = columns
-        self.__board = self.__init_board(rows, columns)
+
+    def __init__(self, row_size: int, column_size: int):
+        self.row_size = row_size
+        self.column_size = column_size
+        self.__board: np.ndarray = self.__init_board(row_size, column_size)
 
     @staticmethod
-    def __init_board(rows: int, columns: int) -> list:
-        return np.full((rows, columns), Icon.Empty).tolist()[0:]
+    def __init_board(row_size: int, column_size: int) -> np.ndarray:
+        return np.full((row_size, column_size), Icon.Empty.value, dtype=int)
 
-    def update(self, new_board: list):
+    @property
+    def board(self) -> np.ndarray:
+        return self.__board
+
+    def replace(self, new_board: np.ndarray):
         self.__board = new_board
 
-    def print(self):
-        for i, y in enumerate(reversed(self.__board), start=1):
-            print('%d: ' % (self.rows - i), end='')
-            for x in y:
-                print(IconToStringDict[x], end='')
-            print()
-
     def get_icon(self, x, y) -> Icon:
-        return self.__board[y][x]
+        return Icon(self.board[y, x])
 
-    def get_rows(self, amount):
-        return self.__board[0:amount]
+    def get_positions(self, icon: Icon) -> np.ndarray:
+        return self.board == icon.value
 
-    def get_joined_rows(self, amount):
-        return reduce(operator.add, self.__board[0:amount])
+    def get_row(self, amount) -> np.array:
+        """
+        :param amount: n
+        :return: np.array
+        """
+        return self.board[amount]
 
-    def get_reversed_rows(self, amount):
-        return reversed(self.__board)[0:amount]
+    def get_column(self, amount) -> np.array:
+        """
+        :param amount: n
+        :return: np.array
+        """
+        return self.board[:, amount]
 
-    def get_joined_reversed_rows(self, amount):
-        return reduce(operator.add, reversed(self.__board)[0:amount])
+    def pop_icon(self, column):
+        raise NotImplemented
 
-    def get_positions(self, icon: Icon) -> list:
-        result = []
-        for y, row in enumerate(self.__board):
-            for x, item in enumerate(row):
-                if item == icon:
-                    result.append(Point(x, y))
-        return result
+    def push_icon(self, column):
+        raise NotImplemented
 
-    def get_surface(self) -> list:
-        result = [Icon.Empty] * self.columns
-        for i in range(self.columns):
-            for row in self.__board:
-                if row[i] != Icon.Empty:
-                    result[i] = row[i]
-                    break
-        return result
+    def swap_icon(self, column):
+        raise NotImplemented
+
+    def print(self):
+        for i, y in enumerate(reversed(self.board), start=1):
+            print('%d: ' % (self.row_size - i), end='')
+            for x in y:
+                print(Icon.to_char(Icon(x)), end='')
+            print()

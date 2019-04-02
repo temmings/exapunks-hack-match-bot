@@ -1,8 +1,10 @@
 import time
+import typing
 from enum import Enum
 
-from controller import Controller
 from win32input import PressKey, ReleaseKey
+
+InputIntervalSecond = typing.NewType('InputIntervalSecond', float)
 
 
 class KeyCode(Enum):
@@ -18,9 +20,9 @@ class KeyCode(Enum):
     VK_W = 0x57
 
 
-class Win32Controller(Controller):
-    def __init__(self, release_wait_second: float):
-        Controller.__init__(self, release_wait_second)
+class Win32Controller(object):
+    def __init__(self, interval: InputIntervalSecond):
+        self.interval = interval
 
     def start(self):
         self.__press_key(KeyCode.VK_RETURN)
@@ -31,10 +33,10 @@ class Win32Controller(Controller):
     def right(self):
         self.__press_key(KeyCode.VK_D)
 
-    def pop(self):
+    def grab_icon(self):
         self.__press_key(KeyCode.VK_J)
 
-    def push(self):
+    def throw_icon(self):
         self.__press_key(KeyCode.VK_J)
 
     def swap(self):
@@ -42,6 +44,6 @@ class Win32Controller(Controller):
 
     def __press_key(self, code: KeyCode):
         PressKey(code.value)
-        time.sleep(self.release_wait_second)
+        time.sleep(self.interval)
         ReleaseKey(code.value)
-        time.sleep(self.release_wait_second)
+        time.sleep(self.interval)

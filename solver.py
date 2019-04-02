@@ -1,15 +1,19 @@
-from functools import reduce
+from collections import Counter
 from random import randrange
+import typing
 
 from board import Board
-from character import Character
+from game import Game
 from icon import Icon, IconTypeDict, IconType
+
+Score = typing.NewType('Score', int)
+Answer = typing.NewType('Answer', typing.List[typing.Callable])
 
 
 class Solver(object):
     debug = False
 
-    def solve(self, board: Board, char: Character):
+    def solve(self, game: Game) -> Answer:
         raise NotImplemented('')
 
     def enable_debug(self):
@@ -21,67 +25,70 @@ class Solver(object):
 
 
 class RandomSolver(Solver):
-    def solve(self, board: Board, char: Character):
+    def solve(self, game: Game) -> Answer:
         destination = randrange(0, 7)
-        print('current position: %d' % char.position)
+        print('current position: %d' % game.char.position)
         print('go_position(%d)' % destination)
-        char.go_position(destination)
+        game.char.go_position(destination)
 
+        answer = Answer([])
         r = randrange(0, 3)
         if r == 0:
-            char.swap()
+            answer += game.char.swap
         elif r == 1:
-            if char.having_icon is None:
-                icon = board.get_surface()[char.position]
-                char.grab(icon)
+            if game.char.having_icon is None:
+                icon = game.board.get_surface()[game.char.position]
+                answer += lambda: game.char.grab(icon)
         elif r == 2:
-            if char.having_icon is not None:
-                char.throw()
+            if game.char.having_icon is not None:
+                answer += game.char.throw
+
+        return answer
 
 
 class HandmadeSolver(Solver):
-    ONE_ACTION_PATTERN = {
-        (0, 0, 1, 0, 1, 1, 1): lambda c: c.go_position(2) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (0, 0, 1, 1, 0, 1, 1): lambda c: c.go_position(2) and c.grab() and c.go_position(4) and c.throw() and c.swap(),
-        (0, 0, 1, 1, 1, 0, 1): lambda c: c.go_position(6) and c.grab() and c.go_position(5) and c.throw() and c.swap(),
-        (0, 1, 0, 0, 1, 1, 1): lambda c: c.go_position(1) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (0, 1, 0, 1, 0, 1, 1): lambda c: c.go_position(1) and c.grab() and c.go_position(4) and c.throw() and c.swap(),
-        (0, 1, 0, 1, 1, 0, 1): lambda c: c.go_position(6) and c.grab() and c.go_position(4) and c.throw() and c.swap(),
-        (0, 1, 0, 1, 1, 1, 0): lambda c: c.go_position(1) and c.grab() and c.go_position(2) and c.throw() and c.swap(),
-        (0, 1, 1, 1, 0, 0, 1): lambda c: c.go_position(6) and c.grab() and c.go_position(4) and c.throw() and c.swap(),
-        (0, 1, 1, 1, 0, 1, 0): lambda c: c.go_position(5) and c.grab() and c.go_position(4) and c.throw() and c.swap(),
-        (1, 0, 0, 0, 1, 1, 1): lambda c: c.go_position(0) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (1, 0, 0, 0, 1, 1, 1): lambda c: c.go_position(0) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (1, 1, 0, 1, 0, 0, 1): lambda c: c.go_position(6) and c.grab() and c.go_position(2) and c.throw() and c.swap(),
-        (1, 1, 0, 1, 0, 1, 0): lambda c: c.go_position(5) and c.grab() and c.go_position(2) and c.throw() and c.swap(),
-        (1, 1, 0, 1, 1, 0, 0): lambda c: c.go_position(4) and c.grab() and c.go_position(2) and c.throw() and c.swap(),
-        (1, 1, 1, 0, 0, 0, 1): lambda c: c.go_position(6) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (1, 1, 1, 0, 0, 1, 0): lambda c: c.go_position(5) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-        (1, 1, 1, 0, 1, 0, 0): lambda c: c.go_position(4) and c.grab() and c.go_position(3) and c.throw() and c.swap(),
-    }
+    def solve(self, game: Game, depth=10) -> Answer:
+        self.trace('character position: %d' % game.char.position)
+        self.trace('character having icon: %s' % game.char.having_icon)
+        score = self.eval(game.board)
+        print('board score: %d' % score)
 
-    def solve(self, board: Board, char: Character):
-        self.trace('character position: %d' % char.position)
-        self.trace('character having icon: %s' % char.having_icon)
+        answer = Answer([])
+        score = eval(game.board)
 
-        self.trace('find one action pattern', end='')
+        return answer
 
-        empty_row = [Icon.Empty] * board.columns
-        rows = list(filter(lambda x: x != empty_row, board.get_rows(9).copy()))
-        if not rows:
-            return
-        row = rows[0]
-        for pattern, action in self.ONE_ACTION_PATTERN.items():
-            self.trace('.', end='')
-            zipped = zip(pattern, row)
-            matched = list(filter(lambda x: x[0] == 1 and x[1] != Icon.Empty, zipped))
-            if not matched:
-                continue
-            _, icons = zip(*matched)
-            if reduce(lambda a, b: a == b, icons):
-                self.trace('\nfound pattern: %s' % str(pattern))
-                action(char)
-        print()
+    @staticmethod
+    def eval(board) -> Score:
+        score = Score(0)
+
+        map_between = lambda func, lst: map(func, lst, lst[1:])
+        # 横に隣接した同一アイコンが多いほど良い (各1点)
+        # 空白セルもここでスコアリングされる
+        # (縦と横で重複して加点されるアイコンもある)
+        for n in range(board.rows):
+            neighbors = map_between(lambda a, b: a == b, board.get_row(n))
+            score += list(neighbors).count(True) * 1
+
+        # 縦に隣接した同一アイコンが多いほど良い (各1点)
+        # 空白セルもここでスコアリングされる
+        # (縦と横で重複して加点されるアイコンもある)
+        for n in range(board.columns):
+            neighbors = map_between(lambda a, b: a == b, board.get_column(n))
+            score += list(neighbors).count(True) * 1
+
+        counter = Counter(board.board)
+
+        # 利用不可能なアイコンが存在するのは悪い (各-1点)
+        score += sum([v for k, v in counter.items() if Icon(k) in IconType.Normal and v < IconType.Normal.value]) * -1
+
+        # 利用不可能なボムが存在するのは普通 (各0点)
+        score += sum([v for k, v in counter.items() if Icon(k) in IconType.Normal and v < IconType.Bomb.value]) * 0
+
+        # 利用可能なボムが存在するのは良い (利用可能ボムごとに各5点)
+        score += len([k for k, v in counter.items() if Icon(k) in IconType.Bomb and IconType.Bomb.value <= v]) * 5
+
+        return score
 
     @staticmethod
     def find_bomb(board: Board):

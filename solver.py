@@ -6,14 +6,14 @@ from board import Board
 from game import Game
 from icon import Icon, IconTypeDict, IconType
 
-Score = typing.NewType('Score', int)
+EvalScore = typing.NewType('EvalScore', int)
 Answer = typing.NewType('Answer', typing.List[typing.Callable])
 
 
 class Solver(object):
     debug = False
 
-    def solve(self, game: Game) -> Answer:
+    def solve(self, game: Game):
         raise NotImplemented('')
 
     def enable_debug(self):
@@ -25,7 +25,7 @@ class Solver(object):
 
 
 class RandomSolver(Solver):
-    def solve(self, game: Game) -> Answer:
+    def solve(self, game: Game):
         destination = randrange(0, 7)
         print('current position: %d' % game.char.position)
         print('go_position(%d)' % destination)
@@ -47,7 +47,7 @@ class RandomSolver(Solver):
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=10) -> Answer:
+    def solve(self, game: Game, depth=10):
         self.trace('character position: %d' % game.char.position)
         self.trace('character having icon: %s' % game.char.having_icon)
         score = self.eval(game.board)
@@ -59,8 +59,8 @@ class HandmadeSolver(Solver):
         return answer
 
     @staticmethod
-    def eval(board) -> Score:
-        score = Score(0)
+    def eval(board) -> EvalScore:
+        score = EvalScore(0)
 
         map_between = lambda func, lst: map(func, lst, lst[1:])
         # 横に隣接した同一アイコンが多いほど良い (各1点)

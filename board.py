@@ -6,7 +6,6 @@ from icon import Icon
 class Board(object):
     """
     ゲームのボードを表現する。
-    実際のゲーム画面とは上下が逆転した形で扱う。
     """
 
     def __init__(self, row_size: int, column_size: int):
@@ -46,17 +45,34 @@ class Board(object):
         return self.board[:, amount]
 
     def pop_icon(self, column):
-        raise NotImplemented
+        col = self.get_column(column)
+        icon = Icon.Empty
+        for n in range(self.row_size):
+            if col[n] == Icon.Empty.value:
+                continue
+            icon = col[n]
+            col[n] = Icon.Empty.value
+            break
+        return Icon(icon)
 
-    def push_icon(self, column):
-        raise NotImplemented
+    def push_icon(self, column, icon: Icon):
+        col = self.get_column(column)
+        for n in range(self.row_size):
+            if col[n] == Icon.Empty.value:
+                col[n] = icon.value
+                break
 
     def swap_icon(self, column):
-        raise NotImplemented
+        col = self.get_column(column)
+        for n in range(self.row_size):
+            if col[n] == Icon.Empty.value:
+                continue
+            col[n], col[n+1] = col[n+1], col[n]
+            break
 
     def print(self):
-        for i, y in enumerate(reversed(self.board), start=1):
-            print('%d: ' % (self.row_size - i), end='')
+        for i, y in enumerate(self.board, start=0):
+            print('%d: ' % i, end='')
             for x in y:
                 print(Icon.to_char(Icon(x)), end='')
             print()

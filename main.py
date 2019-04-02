@@ -42,12 +42,12 @@ def main():
     game_window = capture.crop(game_window_position)
     detector = BoardStateDetector(game_window, Game.ROWS, Game.COLUMNS)
     detector.enable_debug()
-    controller = Win32Controller(INPUT_INTERVAL_SECOND)
 
     hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
     win32gui.SetForegroundWindow(hwnd)
 
     time.sleep(1)
+    controller = Win32Controller(INPUT_INTERVAL_SECOND)
     controller.start()
 
     # main loop

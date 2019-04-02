@@ -34,7 +34,7 @@ class Character(object):
 
     def throw_icon(self):
         assert(self.having_icon is not None)
-        self.board.push_icon(self.position)
+        self.board.push_icon(self.position, self.having_icon)
         self.__having_icon = None
 
     def swap(self):

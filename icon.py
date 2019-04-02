@@ -39,7 +39,7 @@ class Icon(IntEnum):
         return self.to_char(self)
 
     def __repr__(self):
-        return 'Icon<%s, %s, %d>' % (self.name, self.to_char(self), self.value)
+        return 'Icon<%s, "%s", %d>' % (self.name, self.to_char(self), self.value)
 
 
 class IconType(IntEnum):

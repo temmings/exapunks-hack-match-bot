@@ -3,12 +3,10 @@
 #
 from PIL import Image
 
-from point import Point
-
 
 class WindowSize(object):
-    HD_PLUS = Point(1600, 900)
-    FULL_HD = Point(1920, 1080)
+    HD_PLUS = (1600, 900)
+    FULL_HD = (1920, 1080)
 
 
 class Capture(object):

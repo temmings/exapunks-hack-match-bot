@@ -1,6 +1,8 @@
 import time
 import typing
 
+import numpy as np
+
 from board import Board
 from character import Character
 from frame_counter import FrameCounter
@@ -18,7 +20,6 @@ class Game(object):
         self.board = board
         self.char = char
         self.score = 0
-        self.__is_alive = True
 
     def main_loop(self, callback: typing.Callable):
         while self.is_alive:
@@ -30,23 +31,29 @@ class Game(object):
         self.trace('game over.')
 
     def eval(self, board: Board):
-        has_action = True
-        while has_action:
-            has_action, board, _score = self.action(board)
-            self.score += _score
-        return self.score
+        score = 0
+        has_effect = True
+        while has_effect:
+            has_action, board, _score = self.effect(board)
+            score += _score
+        return score
 
-    def action(self, board):
-        raise NotImplemented
+    def effect(self, board) -> typing.Tuple[bool, np.ndarray, int]:
+        # TODO: 実装
+        score = 0
+        new_board = board
+        return False, new_board, score
 
     def generate_row(self, board: Board):
-        last_row = board.get_row(self.ROWS-1)
-        if True in (last_row != Icon.Empty.value):
-            self.__is_alive = False
+        new_row = self.board.randomize_row()
+        new_board = np.append(board.board, 0, new_row, axis=0)
+        if (board.board == Icon.Empty.value).all():
+            new_board = np.delete[new_board, self.ROWS]
+        board.replace(new_board)
 
     @property
     def is_alive(self) -> bool:
-        return self.__is_alive
+        return self.board.max_icon_height < self.ROWS
 
     def trace(self, msg):
         if self.debug:

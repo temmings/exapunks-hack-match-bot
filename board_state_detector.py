@@ -8,6 +8,11 @@ from point import Point
 class BoardStateDetector(object):
     debug = False
 
+    # 各アイコンのヒストグラムを事前に取得しておく
+    icon_histogram_dict = {
+        k: Image.open(v).histogram() for k, v in IconFileDict.items()
+    }
+
     def __init__(self, image: Image, row_size: int, column_size: int):
         self.image = image
         self.row_size = row_size
@@ -17,16 +22,11 @@ class BoardStateDetector(object):
         self.icon_size = Point(image.width // self.column_size,
                                image.height // self.row_size)
 
-        # 各アイコンのヒストグラムを事前に取得しておく
-        self.icon_histogram_dict = {
-            k: Image.open(v).histogram() for k, v in IconFileDict.items()
-        }
-
     def get_board_from_image(self, image: Image) -> np.ndarray:
         new_board = []
         for n in range(self.row_size):
-            new_board.insert(0, self._detect_column(image, n))
-        return np.ndarray(new_board)
+            new_board.append(self._detect_column(image, n))
+        return np.asarray(new_board)
 
     def enable_debug(self):
         self.debug = True
@@ -47,12 +47,13 @@ class BoardStateDetector(object):
             detect_cols.append(icon.value)
         return detect_cols
 
-    def _detect_icon(self, image: Image) -> Icon:
+    @classmethod
+    def _detect_icon(cls, image: Image) -> Icon:
         h1 = image.histogram()
         # key: Icon, value: rms
         # TODO: ホットスポット。 200～300ms くらい掛かっている
         rmse_dict = {
-            k: self.diff_rmse(h1, v) for k, v in self.icon_histogram_dict.items()
+            k: cls.diff_rmse(h1, v) for k, v in cls.icon_histogram_dict.items()
         }
         # RMSEで画像を比較し、一番近しいアイコンを採用する
         # 0.10(値は適当)を超えているものは該当なしとして空白とする

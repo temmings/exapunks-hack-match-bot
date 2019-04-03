@@ -63,7 +63,7 @@ def main():
             new_board = detector.get_board_from_image(window)
             game.board.replace(new_board)
 
-        answer = solver.solve(game)
+        solver.solve(game)
 
         if DEBUG_PRINT_BOARD:
             print('current board:')

@@ -2,23 +2,17 @@
 # coding: utf-8
 #
 import time
-from enum import Enum
 
 from board import Board
 from board_state_detector import BoardStateDetector
 from character import Character
 from game import Game
 from handmade_solver import HandmadeSolver
+from mode import Mode
 from void_controller import VoidController
 from win32controller import Win32Controller, InputIntervalSecond
 
-
-class Mode(Enum):
-    RealGame = 1
-    VirtualGame = 2
-
-
-MODE = Mode.RealGame
+MODE = Mode.VirtualGame
 DEBUG_SAVE_BOARD = False
 DEBUG_PRINT_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'
@@ -75,7 +69,7 @@ def main():
 
         solver.solve(game)
 
-    game.main_loop(proc)
+    game.main_loop(proc, MODE)
 
     exit(0)
 

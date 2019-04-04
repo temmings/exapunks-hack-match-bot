@@ -7,12 +7,13 @@ from board import Board
 from character import Character
 from frame_counter import FrameCounter
 from icon import Icon, IconType, IconTypeDict, IconBombEraseDict
+from mode import Mode
 
 Score = typing.NewType('Score', int)
 
 
 class Game(object):
-    FRAME_RATE = 30
+    FRAME_RATE = 60
     FRAME_SECOND = 1.0 / FRAME_RATE
 
     def __init__(self, board: Board, char: Character):
@@ -24,12 +25,13 @@ class Game(object):
         self.rows, self.columns = board.row_size, board.column_size
         self.__is_alive = True
 
-    def main_loop(self, callback: typing.Callable):
+    def main_loop(self, callback: typing.Callable, mode: Mode):
         while self.is_alive:
             # 1秒毎に行が追加される
-            #if 0 == self.current_frame % self.FRAME_RATE:
-            #    self.add_generate_row(self.board)
-            #self.score += self.effect(self.board)
+            if mode == Mode.VirtualGame:
+                if 0 == self.current_frame % self.FRAME_RATE:
+                    self.add_generate_row(self.board)
+                self.score += self.effect(self.board)
             self.trace('process time: %f' % self.process_time)
             self.trace('game frame: %d' % self.frame.current)
             self.trace('game score: %d' % self.score)
@@ -41,7 +43,7 @@ class Game(object):
             self.frame.count_up()
             if self.frame.process_time < self.FRAME_SECOND:
                 time.sleep(self.FRAME_SECOND - self.process_time)
-            self.__is_alive = (self.board.board != Icon.Empty.value).any()
+            self.__is_alive = self.__is_alive and (self.board.board != Icon.Empty.value).any()
         self.trace('game over.')
 
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
@@ -93,13 +95,14 @@ class Game(object):
             score += 100
         return score
 
-    @staticmethod
-    def add_generate_row(board: Board):
+    def add_generate_row(self, board: Board):
         new_row = board.random_row(rows=1)
         new_board = np.vstack((new_row, board.board))
         if (board.board[-1, :] == Icon.Empty.value).all():
             new_board = np.delete(new_board, -1, axis=0)
             board.replace(new_board)
+        else:
+            self.__is_alive = False
 
     @property
     def is_alive(self) -> bool:

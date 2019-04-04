@@ -3,14 +3,13 @@ from unittest import TestCase
 from PIL import Image
 
 from board_state_detector import BoardStateDetector
-from game import Game
 from icon import Icon
 
 
-class TestBoardImageDetectorDetectIcon(TestCase):
+class TestBoardStateDetectorDetectIcon(TestCase):
     def setUp(self):
         image = Image.open('test/board1.png')
-        self.detector = BoardStateDetector(image, row_size=Game.ROWS, column_size=Game.COLUMNS)
+        self.detector = BoardStateDetector(image, row_size=9, column_size=7)
 
     def test_icon_green(self):
         image = Image.open('test/icon_green.png')

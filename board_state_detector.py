@@ -26,7 +26,7 @@ class BoardStateDetector(object):
         new_board = []
         for n in range(self.row_size):
             new_board.append(self._detect_column(image, n))
-        return np.asarray(new_board)
+        return np.asarray(new_board, dtype=np.uint16)
 
     def enable_debug(self):
         self.debug = True

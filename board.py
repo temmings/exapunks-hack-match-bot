@@ -11,21 +11,34 @@ class Board(object):
     def __init__(self, row_size: int, column_size: int):
         self.row_size = row_size
         self.column_size = column_size
-        self.__board: np.ndarray = self.__init_board(row_size, column_size)
+        self.__board: np.ndarray = self.init(row_size, column_size)
 
     @staticmethod
-    def __init_board(row_size: int, column_size: int) -> np.ndarray:
-        return np.full((row_size, column_size), Icon.Empty.value, dtype=int)
+    def init(row_size: int, column_size: int) -> np.ndarray:
+        return np.full((row_size, column_size), Icon.Empty.value, dtype=np.uint16)
 
-    def randomize_board(self, empty_rows=2) -> np.ndarray:
+    @staticmethod
+    def pack(board: np.ndarray) -> np.ndarray:
+        b = board.T
+        for c in b:
+            for n in range(c.size-1, 0, -1):
+                if c[n-1] == Icon.Empty.value and c[n] == Icon.Empty.value:
+                    continue
+                if c[n-1] == Icon.Empty.value:
+                    c[n-1], c[n] = c[n], c[n-1]
+        return b.T
+
+    def randomize(self, empty_rows=2) -> np.ndarray:
         # 5 行分のランダム配置
-        x = 2 ** np.random.randint(10, size=(self.row_size - empty_rows, self.column_size))
+        x = self.random_row(rows=self.row_size - empty_rows)
         # 2行分の空白
-        return np.append(x, np.zeros((empty_rows, self.column_size), dtype=int), axis=0)
+        return np.append(x, self.empty_row(rows=2), axis=0)
 
-    def randomize_row(self) -> np.ndarray:
-        # 1 行分のランダム配置
-        return 2 ** np.random.randint(10, size=(1, self.column_size))
+    def random_row(self, rows=1) -> np.ndarray:
+        return 2 ** np.random.randint(10, size=(rows, self.column_size), dtype=np.uint16)
+
+    def empty_row(self, rows=1) -> np.ndarray:
+        return np.zeros((rows, self.column_size), dtype=np.uint16)
 
     @property
     def board(self) -> np.ndarray:
@@ -34,7 +47,7 @@ class Board(object):
     def replace(self, new_board: np.ndarray):
         self.__board = new_board
 
-    def get_icon(self, x, y) -> Icon:
+    def get_icon(self, y, x) -> Icon:
         return Icon(self.board[y, x])
 
     def get_positions(self, icon: Icon) -> np.ndarray:
@@ -57,11 +70,11 @@ class Board(object):
     def pop_icon(self, column):
         col = self.get_column(column)
         icon = Icon.Empty
-        for n in range(self.row_size):
-            if col[n] == Icon.Empty.value:
+        for n in range(self.row_size, 0, -1):
+            if col[n-1] == Icon.Empty.value:
                 continue
-            icon = col[n]
-            col[n] = Icon.Empty.value
+            icon = col[n-1]
+            col[n-1] = Icon.Empty.value
             break
         return Icon(icon)
 

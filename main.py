@@ -29,8 +29,10 @@ def main():
         # score_window = (828, 251, 1237, 717)
     else:
         raise NotImplemented()
+    
+    rows, columns = 9, 7
 
-    board = Board(Game.ROWS, Game.COLUMNS)
+    board = Board(rows, columns)
     char = Character(board)
     game = Game(board, char)
     game.enable_debug()
@@ -40,7 +42,7 @@ def main():
     solver.enable_debug()
 
     game_window = capture.crop(game_window_position)
-    detector = BoardStateDetector(game_window, Game.ROWS, Game.COLUMNS)
+    detector = BoardStateDetector(game_window, rows, columns)
     detector.enable_debug()
 
     hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)

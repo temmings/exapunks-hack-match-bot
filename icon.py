@@ -66,6 +66,14 @@ IconTypeDict = {
         Icon.BombYellow),
 }
 
+IconBombEraseDict = {
+    Icon.BombGreen: Icon.Green,
+    Icon.BombPink: Icon.Pink,
+    Icon.BombPurple: Icon.Purple,
+    Icon.BombRed: Icon.Red,
+    Icon.BombYellow: Icon.Yellow,
+}
+
 IconFileDict = {
     Icon.Green: 'test/icon_green.png',
     Icon.Pink: 'test/icon_pink.png',

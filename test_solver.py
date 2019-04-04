@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from board import Board
-from solver import HandmadeSolver
+from handmade_solver import HandmadeSolver
 
 
 class TestHandmadeSolver(TestCase):

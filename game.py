@@ -12,7 +12,7 @@ Score = typing.NewType('Score', int)
 
 
 class Game(object):
-    FRAME_RATE = 60
+    FRAME_RATE = 30
     FRAME_SECOND = 1.0 / FRAME_RATE
 
     def __init__(self, board: Board, char: Character):
@@ -22,26 +22,38 @@ class Game(object):
         self.char = char
         self.score = 0
         self.rows, self.columns = board.row_size, board.column_size
+        self.__is_alive = True
 
     def main_loop(self, callback: typing.Callable):
         while self.is_alive:
-            self.score += self.effect(self.board)
+            # 1秒毎に行が追加される
+            #if 0 == self.current_frame % self.FRAME_RATE:
+            #    self.add_generate_row(self.board)
+            #self.score += self.effect(self.board)
+            self.trace('process time: %f' % self.process_time)
+            self.trace('game frame: %d' % self.frame.current)
+            self.trace('game score: %d' % self.score)
             callback()
+            print()
+            self.trace('game board:')
+            self.board.print()
+            print()
             self.frame.count_up()
             if self.frame.process_time < self.FRAME_SECOND:
                 time.sleep(self.FRAME_SECOND - self.process_time)
+            self.__is_alive = (self.board.board != Icon.Empty.value).any()
         self.trace('game over.')
 
-    def effect(self, board: Board, prev_board=None, score=Score(0)) -> Score:
+    def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
         if prev_board is not None and (board.board == prev_board).all():
             return score
         prev_board = board.board.copy()
         for icon_type in IconType:
             for icon in IconTypeDict[icon_type]:
-                score += self.erase_icon(board, icon, icon_type)
+                score += self.erase_icon(board, icon, icon_type) * multiply
         packed_bord = board.pack(board.board)
         self.board.replace(packed_bord)
-        return self.effect(board, prev_board, score)
+        return self.effect(board, prev_board, multiply=multiply*2, score=score)
 
     def erase_icon(self, board: Board, icon: Icon, icon_type: IconType) -> Score:
         ys, xs = np.where(board.board == icon)
@@ -63,11 +75,10 @@ class Game(object):
         if icon_type.value <= count:
             for y, x in erase_candidates:
                 b[y, x] = Icon.Empty.value
-        if icon_type == IconType.Normal:
-            # TODO: 適当
-            score += 100
-        elif icon_type == IconType.Bomb:
-            score += self.bomb_effect(board, icon)
+            if icon_type == IconType.Normal:
+                score += 100 * count
+            elif icon_type == IconType.Bomb:
+                score += self.bomb_effect(board, icon)
         return score
 
     @staticmethod
@@ -79,8 +90,7 @@ class Game(object):
         score = Score(0)
         for y, x in zip(ys, xs):
             board.board[y, x] = Icon.Empty.value
-            # TODO: 適当
-            score += 1000
+            score += 100
         return score
 
     @staticmethod
@@ -89,11 +99,11 @@ class Game(object):
         new_board = np.vstack((new_row, board.board))
         if (board.board[-1, :] == Icon.Empty.value).all():
             new_board = np.delete(new_board, -1, axis=0)
-        board.replace(new_board)
+            board.replace(new_board)
 
     @property
     def is_alive(self) -> bool:
-        return self.board.max_icon_height < self.rows
+        return self.__is_alive
 
     def trace(self, msg):
         if self.debug:

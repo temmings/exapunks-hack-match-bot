@@ -28,14 +28,14 @@ class Board(object):
                     c[n-1], c[n] = c[n], c[n-1]
         return b.T
 
-    def randomize(self, empty_rows=2) -> np.ndarray:
-        # 5 行分のランダム配置
-        x = self.random_row(rows=self.row_size - empty_rows)
-        # 2行分の空白
-        return np.append(x, self.empty_row(rows=2), axis=0)
+    def randomize(self, rows=1) -> np.ndarray:
+        # ランダム配置
+        x = self.random_row(rows=rows)
+        # 空白
+        return np.append(x, self.empty_row(rows=self.row_size - rows), axis=0)
 
-    def random_row(self, rows=1) -> np.ndarray:
-        return 2 ** np.random.randint(10, size=(rows, self.column_size), dtype=np.uint16)
+    def random_row(self, rows=1, has_bomb=False) -> np.ndarray:
+        return 2 ** np.random.randint(10 if has_bomb else 5, size=(rows, self.column_size), dtype=np.uint16)
 
     def empty_row(self, rows=1) -> np.ndarray:
         return np.zeros((rows, self.column_size), dtype=np.uint16)
@@ -69,14 +69,13 @@ class Board(object):
 
     def pop_icon(self, column):
         col = self.get_column(column)
-        icon = Icon.Empty
         for n in range(self.row_size, 0, -1):
             if col[n-1] == Icon.Empty.value:
                 continue
             icon = col[n-1]
             col[n-1] = Icon.Empty.value
-            break
-        return Icon(icon)
+            return True, Icon(icon)
+        return False, Icon.Empty
 
     def push_icon(self, column, icon: Icon):
         col = self.get_column(column)
@@ -88,6 +87,8 @@ class Board(object):
     def swap_icon(self, column):
         col = self.get_column(column)
         for n in range(self.row_size):
+            if n+1 <= self.row_size:
+                return
             if col[n] == Icon.Empty.value:
                 continue
             col[n], col[n+1] = col[n+1], col[n]
@@ -95,6 +96,9 @@ class Board(object):
 
     @property
     def max_icon_height(self):
+        seq = np.where(self.board != Icon.Empty.value)[0]
+        if seq.size == 0:
+            return 0
         return max(np.where(self.board != Icon.Empty.value)[0])
 
     def print(self):

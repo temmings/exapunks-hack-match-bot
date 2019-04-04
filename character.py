@@ -46,8 +46,8 @@ class Character(object):
         assert(self.having_icon is None)
         if self.having_icon is not None:
             return
-        self.trace('g', end=',')
         success, icon = self.board.pop_icon(self.position)
+        self.trace('grab(%d, %s)' % (self.position, icon), end=',')
         if success:
             self.__having_icon = icon
             self.controller.grab()
@@ -56,13 +56,13 @@ class Character(object):
         assert(self.having_icon is not None)
         if self.having_icon is None:
             return
-        self.trace('t', end=',')
+        self.trace('throw(%d, %s)' % (self.position, self.having_icon), end=',')
         self.board.push_icon(self.position, self.having_icon)
         self.__having_icon = None
         self.controller.throw()
 
     def swap(self):
-        self.trace('s', end=',')
+        self.trace('swap(%d)' % self.position, end=',')
         self.board.swap_icon(self.position)
         self.controller.swap()
 

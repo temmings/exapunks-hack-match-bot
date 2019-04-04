@@ -58,7 +58,7 @@ def main():
         controller.start()
 
     # main loop
-    def proc():
+    def proc(game: Game):
         if MODE == Mode.RealGame:
             # ボードの状態を画面から判定し、更新する
             window = capture.crop(game_window_position)

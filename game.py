@@ -13,7 +13,7 @@ Score = typing.NewType('Score', int)
 
 
 class Game(object):
-    FRAME_RATE = 60
+    FRAME_RATE = 15
     FRAME_SECOND = 1.0 / FRAME_RATE
 
     def __init__(self, board: Board, char: Character):
@@ -32,10 +32,10 @@ class Game(object):
                 if 0 == self.current_frame % self.FRAME_RATE:
                     self.add_generate_row(self.board)
                 self.score += self.effect(self.board)
-            self.trace('process time: %f' % self.process_time)
-            self.trace('game frame: %d' % self.frame.current)
+            self.trace('process time: %f' % self.process_time, end=', ')
+            self.trace('game frame: %d' % self.frame.current, end=', ')
             self.trace('game score: %d' % self.score)
-            callback()
+            callback(self)
             print()
             self.trace('game board:')
             self.board.print()
@@ -43,7 +43,8 @@ class Game(object):
             self.frame.count_up()
             if self.frame.process_time < self.FRAME_SECOND:
                 time.sleep(self.FRAME_SECOND - self.process_time)
-            self.__is_alive = self.__is_alive and (self.board.board != Icon.Empty.value).any()
+            self.__is_alive = self.__is_alive and \
+                              (self.board.board != Icon.Empty.value).any()
         self.trace('game over.')
 
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
@@ -108,9 +109,9 @@ class Game(object):
     def is_alive(self) -> bool:
         return self.__is_alive
 
-    def trace(self, msg):
+    def trace(self, msg, end='\n'):
         if self.debug:
-            print(msg)
+            print(msg, end=end)
 
     def enable_debug(self):
         self.debug = True

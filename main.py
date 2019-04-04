@@ -4,17 +4,13 @@
 import time
 from enum import Enum
 
-import win32gui
-
 from board import Board
 from board_state_detector import BoardStateDetector
 from character import Character
-from void_controller import VoidController
 from game import Game
-from win32controller import Win32Controller, InputIntervalSecond
-from capture import WindowSize
-from win32capture import Win32Capture
 from handmade_solver import HandmadeSolver
+from void_controller import VoidController
+from win32controller import Win32Controller, InputIntervalSecond
 
 
 class Mode(Enum):
@@ -44,6 +40,10 @@ def main():
     solver.enable_debug()
 
     if MODE == Mode.RealGame:
+        import win32gui
+        from capture import WindowSize
+        from win32capture import Win32Capture
+
         capture = Win32Capture(WINDOW_NAME)
 
         if capture.window_size == WindowSize.HD_PLUS:

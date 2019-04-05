@@ -9,7 +9,7 @@ from solver import Solver, EvalScore
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=10):
+    def solve(self, game: Game, depth=3):
         current_board_score = self.eval(game)
         self.trace('max height: %d' % game.board.max_icon_height)
         self.trace('evaluated board score: %d' % current_board_score)
@@ -24,7 +24,8 @@ class HandmadeSolver(Solver):
                 vboard.replace(np.array(game.board.board, copy=True))
                 vgame = Game(vboard, Character(vboard))
                 score, actions = self.__solve(
-                    vgame, depth=depth, prev_score=current_board_score, action=action(n), actions=[].copy())
+                    vgame, depth=depth, prev_score=current_board_score,
+                    action=action(n), actions=[].copy())
                 candidates[score] = actions
 
         # 最終スコアが高い行動を選択する
@@ -47,13 +48,14 @@ class HandmadeSolver(Solver):
         score = self.eval(game)
 
         # 前局面よりも高いボードスコアを見つけたら採用する
-        #if prev_score < score:
-        #    return score, actions
+        if prev_score < score:
+            return score, actions
 
         # ゲームオーバーに逹っしたであろう局面からは探索しない
         if score < -50000:
             return score, actions
 
+        candidates = {}
         can_actions = (self.swap, self.grab, self.throw)
         for n in range(game.columns):
             for action in can_actions:
@@ -61,7 +63,13 @@ class HandmadeSolver(Solver):
                 vboard = Board(game.rows, game.columns)
                 vboard.replace(np.array(game.board.board, copy=True))
                 vgame = Game(vboard, Character(vboard))
-                return self.__solve(vgame, depth=depth - 1, prev_score=score, action=action(n), actions=actions.copy())
+                score, actions = self.__solve(
+                    vgame, depth=depth - 1, prev_score=score,
+                    action=action(n), actions=actions.copy())
+                candidates[score] = actions
+
+        max_score = max(candidates.keys())
+        return max_score, candidates[max_score]
 
     @staticmethod
     def eval(game: Game) -> EvalScore:

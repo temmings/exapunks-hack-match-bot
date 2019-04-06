@@ -1,4 +1,5 @@
 from board import Board
+from icon import Icon
 from void_controller import VoidController
 
 
@@ -32,13 +33,11 @@ class Character(object):
 
     def left(self):
         assert(self.MIN_POSITION < self.position)
-        self.trace('<', end=',')
         self.__position -= 1
         self.controller.left()
 
     def right(self):
         assert(self.position < self.MAX_POSITION)
-        self.trace('>', end=',')
         self.__position += 1
         self.controller.right()
 
@@ -47,7 +46,9 @@ class Character(object):
         if self.having_icon is not None:
             return
         success, icon = self.board.pop_icon(self.position)
-        self.trace('grab(%d, %s)' % (self.position, icon), end=',')
+        if icon == Icon.Empty:
+            return
+        self.trace('g(%d:%s)' % (self.position, icon), end=', ')
         if success:
             self.__having_icon = icon
             self.controller.grab()
@@ -56,13 +57,13 @@ class Character(object):
         assert(self.having_icon is not None)
         if self.having_icon is None:
             return
-        self.trace('throw(%d, %s)' % (self.position, self.having_icon), end=',')
+        self.trace('t(%d:%s)' % (self.position, self.having_icon), end=', ')
         self.board.push_icon(self.position, self.having_icon)
         self.__having_icon = None
         self.controller.throw()
 
     def swap(self):
-        self.trace('swap(%d)' % self.position, end=',')
+        self.trace('s(%d)' % self.position, end=', ')
         self.board.swap_icon(self.position)
         self.controller.swap()
 

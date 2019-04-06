@@ -58,16 +58,16 @@ def main():
         controller.start()
 
     # main loop
-    def proc(game: Game):
+    def proc(g: Game):
         if MODE == Mode.RealGame:
             # ボードの状態を画面から判定し、更新する
             window = capture.crop(game_window_position)
             if DEBUG_SAVE_BOARD:
-                window.save('capture/frame_%05d.png' % game.current_frame)
+                window.save('capture/frame_%05d.png' % g.current_frame)
             new_board = detector.get_board_from_image(window)
             board.replace(new_board)
 
-        solver.solve(game)
+        solver.solve(g)
 
     game.main_loop(proc, MODE)
 

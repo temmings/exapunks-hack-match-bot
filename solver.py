@@ -1,8 +1,4 @@
-import typing
-
 from game import Game
-
-EvalScore = typing.NewType('EvalScore', int)
 
 
 class Solver(object):

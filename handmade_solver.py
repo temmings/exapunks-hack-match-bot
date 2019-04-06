@@ -1,3 +1,4 @@
+import copy
 import typing
 
 import numpy as np
@@ -5,82 +6,93 @@ import numpy as np
 from board import Board
 from character import Character
 from game import Game
-from solver import Solver, EvalScore
+from solver import Solver
+
+Score = typing.NewType('Score', int)
+EvalScore = typing.NewType('EvalScore', int)
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=3):
+    CAN_ACTIONS = (
+        lambda n: lambda g: g.char.grab_position(n) if g.char.having_icon is None else g.char.throw_position(n),
+        lambda n: lambda g: g.char.throw_position(n) if g.char.having_icon is not None else g.char.grab_position(n),
+        lambda n: lambda g: g.char.swap_position(n),
+    )
+
+    def solve(self, game: Game, depth=1):
         current_board_score = self.eval(game)
         self.trace('max height: %d' % game.board.max_icon_height)
-        self.trace('evaluated board score: %d' % current_board_score)
         self.trace('have icon: %s' % game.char.having_icon)
+        self.trace('evaluated board score: %d' % current_board_score)
 
-        candidates = {}
-        can_actions = (self.swap, self.grab, self.throw)
-        for n in range(game.columns):
-            for action in can_actions:
-                # 思考用のゲームボードを作成
-                vboard = Board(game.rows, game.columns)
-                vboard.replace(np.array(game.board.board, copy=True))
-                vgame = Game(vboard, Character(vboard))
-                score, actions = self.__solve(
-                    vgame, depth=depth, prev_score=current_board_score,
-                    action=action(n), actions=[].copy())
-                candidates[score] = actions
+        score, actions = self.__solve(
+            game, depth=depth, prev_score=current_board_score, actions=[])
 
-        # 最終スコアが高い行動を選択する
-        max_score = max(candidates.keys())
-        self.trace('action score: %d' % max_score)
+        self.trace('action score: %d' % score)
         self.trace('do action: ', end='')
-        if current_board_score == max_score:
-            return
-        for f in candidates[max_score]:
-            f(game)
+        for action in actions:
+            action(game)
         self.trace('')
 
-    def __solve(self, game: Game, depth: int, prev_score: EvalScore, action: typing.Callable,
-                actions: typing.List[typing.Callable]):
+    memo = {}
+
+    def __solve(self, game: Game, depth: int,
+                prev_score: EvalScore, actions: list):
+
+        # 同一局面を迎えたら、メモ化したスコアとアクションを返却する
+        key = game.board.board.tobytes()
+        if key in self.memo:
+            value = self.memo[key]
+            return value[0], value[1]
+
         if depth == 0:
             return prev_score, actions
-        action(game)
-        actions.append(action)
-        game.effect(game.board)
-        score = self.eval(game)
 
-        # 前局面よりも高いボードスコアを見つけたら採用する
-        if prev_score < score:
-            return score, actions
-
-        # ゲームオーバーに逹っしたであろう局面からは探索しない
-        if score < -50000:
-            return score, actions
+        # ゲームオーバー局面からは探索しない
+        if not game.is_alive:
+            return -99999, actions
 
         candidates = {}
-        can_actions = (self.swap, self.grab, self.throw)
-        for n in range(game.columns):
-            for action in can_actions:
-                # 思考用のゲームボードを作成
-                vboard = Board(game.rows, game.columns)
-                vboard.replace(np.array(game.board.board, copy=True))
-                vgame = Game(vboard, Character(vboard))
+        for action in self.CAN_ACTIONS:
+            for n in range(game.columns):
+                vgame = self.new_game(game)
+                action(n)(vgame)
+                game_score = vgame.effect(vgame.board)
+                score = self.eval(vgame)
+                _actions = copy.deepcopy(actions)
+                _actions.append(action(n))
+
                 score, actions = self.__solve(
                     vgame, depth=depth - 1, prev_score=score,
-                    action=action(n), actions=actions.copy())
-                candidates[score] = actions
+                    actions=_actions)
+                candidates[score] = (vgame, actions)
 
+        if not candidates.keys():
+            return prev_score, actions
         max_score = max(candidates.keys())
-        return max_score, candidates[max_score]
+        vgame, actions = candidates[max_score]
+        key = vgame.board.board.tobytes()
+        self.memo[key] = (max_score, actions)
+        return max_score, actions
+
+    @staticmethod
+    def new_game(game):
+        """
+        思考用のゲームボードを作成
+        """
+        vboard = Board(game.rows, game.columns)
+        vboard.replace(np.array(game.board.board, copy=True))
+        return Game(vboard, Character(vboard))
 
     @staticmethod
     def eval(game: Game) -> EvalScore:
         score = EvalScore(0)
 
-        # アイコン群の高さが行のサイズに逹っした = ゲームオーバー
-        if game.board.row_size <= game.board.max_icon_height:
-            return EvalScore(-99999)
+        # アイコン群の高さが低いほうが良い(高さごとに50点)
+        score += (game.board.row_size - game.board.max_icon_height) * 50
 
-        # アイコン群の高さが低いほうが良い(高さごとに-10点)
-        score += game.board.max_icon_height * -20
+        # アイコンを保持していないほうが良い
+        score += 10 if game.char.having_icon is None else -10
 
         def map_between(func: typing.Callable, lst: list) -> iter:
             return map(func, lst, lst[1:])
@@ -90,37 +102,7 @@ class HandmadeSolver(Solver):
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.row_size):
             neighbors = map_between(lambda a, b: a == b, game.board.get_row(n))
-            score += list(neighbors).count(True) * 2
-
-        # 縦に隣接した同一アイコンが多いほど良い (各1点)
-        # 空白セルもここでスコアリングされる
-        # (縦と横で重複して加点されるアイコンもある)
-        for n in range(game.board.column_size):
-            neighbors = map_between(lambda a, b: a == b, game.board.get_column(n))
-            score += list(neighbors).count(True) * 1
+            count = list(neighbors).count(True)
+            score += count * 2
 
         return score
-
-    @staticmethod
-    def swap(n):
-        def f(game):
-            game.char.swap_position(n)
-        return f
-
-    @staticmethod
-    def grab(n):
-        def f(game):
-            if game.char.having_icon is not None:
-                game.char.throw_position(n)
-            else:
-                game.char.grab_position(n)
-        return f
-
-    @staticmethod
-    def throw(n):
-        def f(game):
-            if game.char.having_icon is None:
-                game.char.grab_position(n)
-            else:
-                game.char.throw_position(n)
-        return f

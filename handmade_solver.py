@@ -54,7 +54,7 @@ class HandmadeSolver(Solver):
             action(vgame)
             vgame.effect(vgame.board)
             score = self.eval(vgame)
-            candidates[score] = (vgame, actions + [action])
+            candidates[score] = (vgame, actions.copy() + [action])
 
         better_score = max(candidates.keys())
         better_state, better_actions = candidates[better_score]

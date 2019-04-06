@@ -8,7 +8,7 @@ import numpy as np
 from board import Board
 from character import Character
 from game import Game
-from icon import Icon, IconType, IconTypeDict
+from icon import Icon
 from solver import Solver
 
 Score = typing.NewType('Score', int)
@@ -110,27 +110,3 @@ class HandmadeSolver(Solver):
             score += count * 2
 
         return score + random.randrange(0, 10)
-
-    @staticmethod
-    def eval2(game: Game) -> EvalScore:
-        score = EvalScore(0)
-
-        b = game.board.board
-        for icon_type in IconType:
-            for icon in IconTypeDict[icon_type]:
-                count = 1
-                ys, xs = np.where(b == icon)
-                if ys.size == 0:
-                    break
-                for y, x in zip(ys, xs):
-                    if x + 1 < b[0, :].size and b[y, x] == b[y, x+1]:
-                        count += 1
-                    if y + 1 < b[:, 0].size and b[y, x] == b[y+1, x]:
-                        count += 1
-                if icon_type.value <= count:
-                    if icon_type == IconType.Normal:
-                        score += 100
-                    elif icon_type == IconType.Bomb:
-                        score += 1000
-
-        return score

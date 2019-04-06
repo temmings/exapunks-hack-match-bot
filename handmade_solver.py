@@ -101,7 +101,7 @@ class HandmadeSolver(Solver):
             count = list(neighbors).count(True)
             score += count * 5
 
-        # 縦に隣接した同一アイコンが多いほど良い (各1点)
+        # 縦に隣接した同一アイコンが多いほど良い (各2点)
         # 空白セルもここでスコアリングされる
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.column_size):

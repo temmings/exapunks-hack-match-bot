@@ -43,8 +43,6 @@ class Character(object):
 
     def grab(self):
         assert(self.having_icon is None)
-        if self.having_icon is not None:
-            return
         success, icon = self.board.pop_icon(self.position)
         if icon == Icon.Empty:
             return
@@ -55,8 +53,6 @@ class Character(object):
 
     def throw(self):
         assert(self.having_icon is not None)
-        if self.having_icon is None:
-            return
         self.trace('t(%d:%s)' % (self.position, self.having_icon), end=', ')
         self.board.push_icon(self.position, self.having_icon)
         self.__having_icon = None

@@ -1,5 +1,6 @@
-import copy
 import typing
+from collections import namedtuple
+from itertools import product
 
 import numpy as np
 
@@ -10,79 +11,62 @@ from solver import Solver
 
 Score = typing.NewType('Score', int)
 EvalScore = typing.NewType('EvalScore', int)
+ScoreWithActions = namedtuple('ScoreWithActions', ('score', 'actions'))
 
 
 class HandmadeSolver(Solver):
-    CAN_ACTIONS = (
-        lambda n: lambda g: g.char.grab_position(n) if g.char.having_icon is None else g.char.throw_position(n),
-        lambda n: lambda g: g.char.throw_position(n) if g.char.having_icon is not None else g.char.grab_position(n),
-        lambda n: lambda g: g.char.swap_position(n),
-    )
-
-    def solve(self, game: Game, depth=1):
-        current_board_score = self.eval(game)
-        self.trace('max height: %d' % game.board.max_icon_height)
-        self.trace('have icon: %s' % game.char.having_icon)
-        self.trace('evaluated board score: %d' % current_board_score)
-
+    def solve(self, game: Game, depth=10):
+        score = self.eval(game)
+        self.trace('board score: %d' % score)
         score, actions = self.__solve(
-            game, depth=depth, prev_score=current_board_score, actions=[])
-
-        self.trace('action score: %d' % score)
-        self.trace('do action: ', end='')
+            game, depth=depth, prev_score=score, actions=[])
+        self.trace('better actions: ', end='')
         for action in actions:
             action(game)
         self.trace('')
+        self.trace('better action score: %d' % score)
 
-    memo = {}
+    CAN_ACTIONS = (
+        lambda n: lambda g: g.char.swap_position(n),
+        lambda n: lambda g: g.char.grab_position(n) if g.char.having_icon is None else g.char.throw_position(n),
+        lambda n: lambda g: g.char.throw_position(n) if g.char.having_icon is not None else g.char.grab_position(n),
+    )
+    memo_board = {}
 
-    def __solve(self, game: Game, depth: int,
-                prev_score: EvalScore, actions: list):
+    def __solve(self, game: Game, depth: int, prev_score, actions: list) -> (EvalScore, typing.List[typing.Callable]):
+        assert(0 <= depth)
+        if 0 == depth:
+            return prev_score, actions
 
         # 同一局面を迎えたら、メモ化したスコアとアクションを返却する
         key = game.board.board.tobytes()
-        if key in self.memo:
-            value = self.memo[key]
-            return value[0], value[1]
+        if key in self.memo_board:
+            memo = self.memo_board[key]
+            return memo.score, memo.actions
 
-        if depth == 0:
-            return prev_score, actions
+        better_score = 0
+        better_state = None
+        better_actions = None
+        for action in [action(n) for action, n in product(self.CAN_ACTIONS, range(game.columns))]:
+            # 思考用のゲームボードを作成
+            board = Board(game.rows, game.columns)
+            board.replace(np.array(game.board.board, copy=True))
+            vgame = Game(board, Character(board))
+            action(vgame)
+            vgame.effect(vgame.board)
+            score = self.eval(vgame)
+            if better_score < score:
+                better_score = score
+                better_state = vgame
+                better_actions = actions + [action]
 
-        # ゲームオーバー局面からは探索しない
-        if not game.is_alive:
-            return -99999, actions
+        better_score, better_actions = self.__solve(
+            better_state, depth=depth - 1,
+            prev_score=better_score, actions=better_actions)
 
-        candidates = {}
-        for action in self.CAN_ACTIONS:
-            for n in range(game.columns):
-                vgame = self.new_game(game)
-                action(n)(vgame)
-                game_score = vgame.effect(vgame.board)
-                score = self.eval(vgame)
-                _actions = copy.deepcopy(actions)
-                _actions.append(action(n))
-
-                score, actions = self.__solve(
-                    vgame, depth=depth - 1, prev_score=score,
-                    actions=_actions)
-                candidates[score] = (vgame, actions)
-
-        if not candidates.keys():
-            return prev_score, actions
-        max_score = max(candidates.keys())
-        vgame, actions = candidates[max_score]
-        key = vgame.board.board.tobytes()
-        self.memo[key] = (max_score, actions)
-        return max_score, actions
-
-    @staticmethod
-    def new_game(game):
-        """
-        思考用のゲームボードを作成
-        """
-        vboard = Board(game.rows, game.columns)
-        vboard.replace(np.array(game.board.board, copy=True))
-        return Game(vboard, Character(vboard))
+        key = better_state.board.board.tobytes()
+        self.memo_board[key] = ScoreWithActions(better_score, better_actions)
+        return better_score, better_actions
 
     @staticmethod
     def eval(game: Game) -> EvalScore:
@@ -97,12 +81,20 @@ class HandmadeSolver(Solver):
         def map_between(func: typing.Callable, lst: list) -> iter:
             return map(func, lst, lst[1:])
 
-        # 横に隣接した同一アイコンが多いほど良い (各5点)
+        # 横に隣接した同一アイコンが多いほど良い (各2点)
         # 空白セルもここでスコアリングされる
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.row_size):
             neighbors = map_between(lambda a, b: a == b, game.board.get_row(n))
             count = list(neighbors).count(True)
             score += count * 2
+
+        # 縦に隣接した同一アイコンが多いほど良い (各1点)
+        # 空白セルもここでスコアリングされる
+        # (縦と横で重複して加点されるアイコンもある)
+        for n in range(game.board.column_size):
+            neighbors = map_between(lambda a, b: a == b, game.board.get_column(n))
+            count = list(neighbors).count(True)
+            score += count * 1
 
         return score

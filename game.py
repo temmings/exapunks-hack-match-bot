@@ -50,13 +50,13 @@ class Game(object):
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
         if prev_board is not None and (board.board == prev_board).all():
             return score
-        prev_board = board.board.copy()
+        prev_board = np.array(board.board, copy=True)
         for icon_type in IconType:
             for icon in IconTypeDict[icon_type]:
                 score += self.erase_icon(board, icon, icon_type) * multiply
         packed_bord = board.pack(board.board)
-        self.board.replace(packed_bord)
-        return self.effect(board, prev_board, multiply=multiply*2, score=score)
+        board.replace(packed_bord)
+        return self.effect(board, prev_board, multiply=multiply+1, score=score)
 
     def erase_icon(self, board: Board, icon: Icon, icon_type: IconType) -> Score:
         ys, xs = np.where(board.board == icon)

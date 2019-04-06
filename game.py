@@ -37,10 +37,10 @@ class Game(object):
             self.trace('game frame: %d' % self.frame.current, end=', ')
             self.trace('game score: %d' % self.score)
             callback(self)
-            print()
+            self.trace('')
             self.trace('game board:')
             self.board.print()
-            print()
+            self.trace('')
             self.frame.count_up()
             if self.frame.process_time < self.FRAME_SECOND:
                 time.sleep(self.FRAME_SECOND - self.process_time)

@@ -7,6 +7,7 @@ import numpy as np
 from board import Board
 from character import Character
 from game import Game
+from icon import Icon
 from solver import Solver
 
 Score = typing.NewType('Score', int)
@@ -44,9 +45,7 @@ class HandmadeSolver(Solver):
             memo = self.memo_board[key]
             return memo.score, memo.actions
 
-        better_score = 0
-        better_state = None
-        better_actions = None
+        candidates = {}
         for action in [action(n) for action, n in product(self.CAN_ACTIONS, range(game.columns))]:
             # 思考用のゲームボードを作成
             board = Board(game.rows, game.columns)
@@ -55,25 +54,31 @@ class HandmadeSolver(Solver):
             action(vgame)
             vgame.effect(vgame.board)
             score = self.eval(vgame)
-            if better_score < score:
-                better_score = score
-                better_state = vgame
-                better_actions = actions + [action]
+            candidates[score] = (vgame, actions + [action])
 
-        better_score, better_actions = self.__solve(
+        better_score = max(candidates.keys())
+        better_state, better_actions = candidates[better_score]
+
+        score, actions = self.__solve(
             better_state, depth=depth - 1,
             prev_score=better_score, actions=better_actions)
 
         key = better_state.board.board.tobytes()
-        self.memo_board[key] = ScoreWithActions(better_score, better_actions)
-        return better_score, better_actions
+        self.memo_board[key] = ScoreWithActions(score, actions)
+        return score, actions
 
     @staticmethod
     def eval(game: Game) -> EvalScore:
         score = EvalScore(0)
 
         # アイコン群の高さが低いほうが良い(高さごとに50点)
-        score += (game.board.row_size - game.board.max_icon_height) * 50
+        score += (game.board.row_size - game.board.max_icon_height - 1) * 50
+
+        # アイコンの存在しない列が存在するのは悪い
+        for n in range(game.board.column_size):
+            col = game.board.get_column(n)
+            if (col == Icon.Empty.value).all():
+                score -= 100
 
         # アイコンを保持していないほうが良い
         score += 10 if game.char.having_icon is None else -10

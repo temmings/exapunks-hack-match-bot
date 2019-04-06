@@ -25,8 +25,54 @@ class TestBoard(TestCase):
             [Icon.Empty.value, Icon.Empty.value, Icon.Empty.value],
         ]).tolist(), self.board.board.tolist())
 
+    def test_swap_icon2(self):
+        self.board.replace(np.array([
+            [Icon.Red.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Yellow.value, Icon.Pink.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Red.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Empty.value, Icon.Empty.value],
+        ]))
+        self.board.swap_icon(1)
+        self.assertEqual(np.array([
+            [Icon.Red.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Yellow.value, Icon.Red.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Pink.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Empty.value, Icon.Empty.value],
+        ]).tolist(), self.board.board.tolist())
+
+    def test_swap_icon3(self):
+        self.board.replace(np.array([
+            [Icon.Red.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Yellow.value, Icon.Pink.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Red.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Yellow.value, Icon.Empty.value],
+        ]))
+        self.board.swap_icon(1)
+        self.assertEqual(np.array([
+            [Icon.Red.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Yellow.value, Icon.Pink.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Yellow.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Red.value, Icon.Empty.value],
+        ]).tolist(), self.board.board.tolist())
+
+    def test_swap_icon4(self):
+        self.board.replace(np.array([
+            [Icon.Empty.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Empty.value, Icon.Pink.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Red.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Yellow.value, Icon.Empty.value],
+        ]))
+        self.board.swap_icon(0)
+        self.assertEqual(np.array([
+            [Icon.Empty.value, Icon.Purple.value, Icon.BombPurple.value],
+            [Icon.Empty.value, Icon.Pink.value, Icon.Green.value],
+            [Icon.Empty.value, Icon.Red.value, Icon.Empty.value],
+            [Icon.Empty.value, Icon.Yellow.value, Icon.Empty.value],
+        ]).tolist(), self.board.board.tolist())
+
     def test_pop_icon(self):
-        icon = self.board.pop_icon(1)
+        success, icon = self.board.pop_icon(1)
+        self.assertTrue(success)
         self.assertEqual(Icon.Pink, icon)
 
         self.assertEqual(np.array([

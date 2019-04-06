@@ -86,12 +86,10 @@ class Board(object):
 
     def swap_icon(self, column):
         col = self.get_column(column)
-        for n in range(self.row_size):
-            if n+1 <= self.row_size:
-                return
+        for n in range(self.row_size-1, 0, -1):
             if col[n] == Icon.Empty.value:
                 continue
-            col[n], col[n+1] = col[n+1], col[n]
+            col[n], col[n-1] = col[n-1], col[n]
             break
 
     @property

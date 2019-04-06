@@ -1,3 +1,4 @@
+import random
 import typing
 from collections import namedtuple
 from itertools import product
@@ -7,7 +8,7 @@ import numpy as np
 from board import Board
 from character import Character
 from game import Game
-from icon import Icon
+from icon import Icon, IconType, IconTypeDict
 from solver import Solver
 
 Score = typing.NewType('Score', int)
@@ -16,11 +17,12 @@ ScoreWithActions = namedtuple('ScoreWithActions', ('score', 'actions'))
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=10):
+    def solve(self, game: Game, depth=3):
         score = self.eval(game)
         self.trace('board score: %d' % score)
         score, actions = self.__solve(
             game, depth=depth, prev_score=score, actions=[])
+        self.trace('having icon: %s' % game.char.having_icon)
         self.trace('better actions: ', end='')
         for action in actions:
             action(game)
@@ -50,10 +52,15 @@ class HandmadeSolver(Solver):
             # 思考用のゲームボードを作成
             board = Board(game.rows, game.columns)
             board.replace(np.array(game.board.board, copy=True))
-            vgame = Game(board, Character(board))
+            char = Character(board)
+            #char.enable_debug()
+            vgame = Game(board, char)
+            char._having_icon = game.char.having_icon
+            #vgame.enable_debug()
             action(vgame)
-            vgame.effect(vgame.board)
+            game_score = vgame.effect(vgame.board)
             score = self.eval(vgame)
+            #self.trace(score)
             candidates[score] = (vgame, actions.copy() + [action])
 
         better_score = max(candidates.keys())
@@ -71,28 +78,28 @@ class HandmadeSolver(Solver):
     def eval(game: Game) -> EvalScore:
         score = EvalScore(0)
 
-        # アイコン群の高さが低いほうが良い(高さごとに50点)
-        score += (game.board.row_size - game.board.max_icon_height - 1) * 50
+        # アイコン群の高さが低いほうが良い
+        score -= game.board.max_icon_height * 100
 
         # アイコンの存在しない列が存在するのは悪い
         for n in range(game.board.column_size):
             col = game.board.get_column(n)
             if (col == Icon.Empty.value).all():
-                score -= 100
+                score -= 50
 
-        # アイコンを保持していないほうが良い
-        score += 10 if game.char.having_icon is None else -10
+        # 空白アイコンの数が多いほうが良い
+        score += np.count_nonzero(game.board.board == Icon.Empty.value)
 
         def map_between(func: typing.Callable, lst: list) -> iter:
             return map(func, lst, lst[1:])
 
-        # 横に隣接した同一アイコンが多いほど良い (各2点)
+        # 横に隣接した同一アイコンが多いほど良い (各5点)
         # 空白セルもここでスコアリングされる
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.row_size):
             neighbors = map_between(lambda a, b: a == b, game.board.get_row(n))
             count = list(neighbors).count(True)
-            score += count * 2
+            score += count * 5
 
         # 縦に隣接した同一アイコンが多いほど良い (各1点)
         # 空白セルもここでスコアリングされる
@@ -100,6 +107,30 @@ class HandmadeSolver(Solver):
         for n in range(game.board.column_size):
             neighbors = map_between(lambda a, b: a == b, game.board.get_column(n))
             count = list(neighbors).count(True)
-            score += count * 1
+            score += count * 2
+
+        return score + random.randrange(0, 10)
+
+    @staticmethod
+    def eval2(game: Game) -> EvalScore:
+        score = EvalScore(0)
+
+        b = game.board.board
+        for icon_type in IconType:
+            for icon in IconTypeDict[icon_type]:
+                count = 1
+                ys, xs = np.where(b == icon)
+                if ys.size == 0:
+                    break
+                for y, x in zip(ys, xs):
+                    if x + 1 < b[0, :].size and b[y, x] == b[y, x+1]:
+                        count += 1
+                    if y + 1 < b[:, 0].size and b[y, x] == b[y+1, x]:
+                        count += 1
+                if icon_type.value <= count:
+                    if icon_type == IconType.Normal:
+                        score += 100
+                    elif icon_type == IconType.Bomb:
+                        score += 1000
 
         return score

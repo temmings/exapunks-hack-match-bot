@@ -12,7 +12,8 @@ from mode import Mode
 from void_controller import VoidController
 from win32controller import Win32Controller, InputIntervalSecond
 
-MODE = Mode.VirtualGame
+MODE = Mode.RealGame
+#MODE = Mode.VirtualGame
 DEBUG_SAVE_BOARD = False
 DEBUG_PRINT_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'

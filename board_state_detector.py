@@ -4,6 +4,8 @@ from PIL import Image, ImageChops
 from icon import Icon, IconFileDict
 from point import Point
 
+RMSE_THRESHOLD = 0.10
+
 
 class BoardStateDetector(object):
     debug = False
@@ -58,7 +60,7 @@ class BoardStateDetector(object):
         # RMSEで画像を比較し、一番近しいアイコンを採用する
         # 0.10(値は適当)を超えているものは該当なしとして空白とする
         candidate = min(rmse_dict.items(), key=lambda x: x[1])
-        if 0.10 < candidate[1]:
+        if RMSE_THRESHOLD < candidate[1]:
             return Icon.Empty
         return candidate[0]
 

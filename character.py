@@ -8,8 +8,8 @@ class Character(object):
     MAX_POSITION = 6
     # position range (0, 6)
     __position = 3
-    __having_icon = None
-    
+    _having_icon = None
+
     debug = False
 
     def __init__(self, board: Board, controller=VoidController()):
@@ -22,7 +22,7 @@ class Character(object):
 
     @property
     def having_icon(self):
-        return self.__having_icon
+        return self._having_icon
 
     def trace(self, msg, end='\n'):
         if self.debug:
@@ -48,14 +48,14 @@ class Character(object):
             return
         self.trace('g(%d:%s)' % (self.position, icon), end=', ')
         if success:
-            self.__having_icon = icon
+            self._having_icon = icon
             self.controller.grab()
 
     def throw(self):
         assert(self.having_icon is not None)
         self.trace('t(%d:%s)' % (self.position, self.having_icon), end=', ')
         self.board.push_icon(self.position, self.having_icon)
-        self.__having_icon = None
+        self._having_icon = None
         self.controller.throw()
 
     def swap(self):

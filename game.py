@@ -15,6 +15,7 @@ Score = typing.NewType('Score', int)
 class Game(object):
     FRAME_RATE = 15
     FRAME_SECOND = 1.0 / FRAME_RATE
+    SCORE_BASE = 100
 
     def __init__(self, board: Board, char: Character):
         self.debug = False
@@ -79,13 +80,12 @@ class Game(object):
             for y, x in erase_candidates:
                 b[y, x] = Icon.Empty.value
             if icon_type == IconType.Normal:
-                score += 100 * count
+                score += self.SCORE_BASE * count
             elif icon_type == IconType.Bomb:
                 score += self.bomb_effect(board, icon)
         return score
 
-    @staticmethod
-    def bomb_effect(board: Board, icon: Icon) -> Score:
+    def bomb_effect(self, board: Board, icon: Icon) -> Score:
         assert(icon in IconTypeDict[IconType.Bomb])
         ys, xs = np.where(board.board == IconBombEraseDict[icon])
         if ys.size == 0:
@@ -93,7 +93,7 @@ class Game(object):
         score = Score(0)
         for y, x in zip(ys, xs):
             board.board[y, x] = Icon.Empty.value
-            score += 100
+            score += self.SCORE_BASE
         return score
 
     def add_generate_row(self, board: Board):

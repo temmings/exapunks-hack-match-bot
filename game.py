@@ -64,21 +64,20 @@ class Game(object):
         if ys.size == 0:
             return Score(0)
         count = 1
-        erase_candidates = set()
         b = board.board
         score = Score(0)
+        erase_candidates = np.zeros((self.rows, self.columns), dtype=bool)
         for y, x in zip(ys, xs):
             if x + 1 < b[0, :].size and b[y, x] == b[y, x+1]:
                 count += 1
-                erase_candidates.add((y, x))
-                erase_candidates.add((y, x+1))
+                erase_candidates[y, x] = True
+                erase_candidates[y, x+1] = True
             if y + 1 < b[:, 0].size and b[y, x] == b[y+1, x]:
                 count += 1
-                erase_candidates.add((y, x))
-                erase_candidates.add((y+1, x))
+                erase_candidates[y, x] = True
+                erase_candidates[y+1, x] = True
         if icon_type.value <= count:
-            for y, x in erase_candidates:
-                b[y, x] = Icon.Empty.value
+            b[erase_candidates] = Icon.Empty.value
             if icon_type == IconType.Normal:
                 score += self.SCORE_BASE * count
             elif icon_type == IconType.Bomb:

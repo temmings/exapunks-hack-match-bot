@@ -27,7 +27,8 @@ class Win32Capture(Capture):
         """
         return self.__window(self.__name).crop(rect)
 
-    def __window(self, name: str) -> Image:
+    @staticmethod
+    def __window(name: str) -> Image:
         """
         reference: https://stackoverflow.com/questions/19695214/python-screenshot-of-inactive-window-printwindow-win32gui
         """

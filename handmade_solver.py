@@ -53,10 +53,10 @@ class HandmadeSolver(Solver):
             board = Board(game.rows, game.columns)
             board.replace(np.array(game.board.board, copy=True))
             char = Character(board)
-            #char.enable_debug()
+            #char.enable_trace()
             vgame = Game(board, char)
             char._having_icon = game.char.having_icon
-            #vgame.enable_debug()
+            #vgame.enable_trace()
             action(vgame)
             game_score = vgame.effect(vgame.board)
             score = self.eval(vgame)

@@ -1,3 +1,4 @@
 Pillow==5.4.1
 pywin32==224
 numpy==1.16.2
+pytest==4.4.0

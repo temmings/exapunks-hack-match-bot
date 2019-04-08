@@ -18,37 +18,38 @@ class Game(Traceable):
     FRAME_SECOND = 1.0 / FRAME_RATE
     SCORE_BASE = 100
 
-    def __init__(self, board: Board, char: Character):
+    def __init__(self, board: Board, char: Character, mode=Mode.VirtualGame):
         self.frame = FrameCounter()
         self.board = board
         self.char = char
+        self.mode = mode
         self.score = 0
         self.rows, self.columns = board.row_size, board.column_size
         self.__is_alive = True
 
-    def main_loop(self, callback: typing.Callable, mode: Mode):
-        if mode == Mode.VirtualGame:
+    def main_loop(self, callback: typing.Callable):
+        if self.mode == Mode.VirtualGame:
             self.add_generate_row(self.board)
             self.add_generate_row(self.board)
             self.add_generate_row(self.board)
         while self.is_alive:
+            self.trace('\ngame board:')
+            self.board.print()
+            self.trace('')
             # 1秒毎に行が追加される
-            if mode == Mode.VirtualGame:
+            if self.mode == Mode.VirtualGame:
                 if 0 == self.current_frame % self.FRAME_RATE:
                     if not self.add_generate_row(self.board):
                         break
-                self.score += self.effect(self.board)
+            self.score += self.effect(self.board)
             self.trace('process time: %f' % self.process_time, end=', ')
             self.trace('game frame: %d' % self.frame.current, end=', ')
             self.trace('game score: %d' % self.score)
             callback(self)
-            self.trace('')
-            self.trace('game board:')
-            self.board.print()
-            self.trace('')
             self.frame.count_up()
-            if self.frame.process_time < self.FRAME_SECOND:
-                time.sleep(self.FRAME_SECOND - self.process_time)
+            if self.mode == Mode.VirtualGame:
+                if self.frame.process_time < self.FRAME_SECOND:
+                    time.sleep(self.FRAME_SECOND - self.process_time)
         self.trace('game over.')
 
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:

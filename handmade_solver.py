@@ -17,7 +17,7 @@ ScoreWithActions = namedtuple('ScoreWithActions', ('score', 'actions'))
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=5):
+    def solve(self, game: Game, depth=3):
         score = self.eval(game)
         self.trace('board score: %d' % score)
         score, actions = self.__solve(
@@ -87,13 +87,16 @@ class HandmadeSolver(Solver):
             if (col == Icon.Empty.value).all():
                 score -= 50
 
+        # アイコンを掴んでないほうが良い
+        score += 10 if game.char.having_icon is None else -10
+
         # 空白アイコンの数が多いほうが良い
         score += np.count_nonzero(game.board.board == Icon.Empty.value)
 
         def map_between(func: typing.Callable, lst: list) -> iter:
             return map(func, lst, lst[1:])
 
-        # 横に隣接した同一アイコンが多いほど良い (各5点)
+        # 横に隣接した同一アイコンが多いほど良い
         # 空白セルもここでスコアリングされる
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.row_size):
@@ -101,7 +104,7 @@ class HandmadeSolver(Solver):
             count = list(neighbors).count(True)
             score += count * 5
 
-        # 縦に隣接した同一アイコンが多いほど良い (各2点)
+        # 縦に隣接した同一アイコンが多いほど良い
         # 空白セルもここでスコアリングされる
         # (縦と横で重複して加点されるアイコンもある)
         for n in range(game.board.column_size):

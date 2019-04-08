@@ -9,13 +9,13 @@ from character import Character
 from game import Game
 from handmade_solver import HandmadeSolver
 from mode import Mode
+from point import Point
 from void_controller import VoidController
 from win32controller import Win32Controller, InputIntervalSecond
 
-#MODE = Mode.RealGame
-MODE = Mode.VirtualGame
-DEBUG_SAVE_BOARD = False
-DEBUG_PRINT_BOARD = True
+MODE = Mode.RealGame
+#MODE = Mode.VirtualGame
+DEBUG_SAVE_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'
 INPUT_INTERVAL_SECOND = InputIntervalSecond(0.050)
 
@@ -45,16 +45,21 @@ def main():
         capture = Win32Capture(WINDOW_NAME)
 
         if capture.window_size == WindowSize.HD_PLUS:
-            # (x0, y0, x1, y1)
-            # (540 * 420)
-            game_window_position = (370, 138, 790, 678)
+            icon_size = Point(60, 60)
+            start_point = Point(370, 138)
+            x0 = start_point.x
+            y0 = start_point.y
+            x1 = x0 + icon_size.x * columns
+            y1 = x0 + icon_size.y * rows
+            game_window_position = (x0, y0, x1, y1)
             # score_window = (828, 251, 1237, 717)
         else:
             raise NotImplemented()
 
         game_window = capture.crop(game_window_position)
-        detector = BoardStateDetector(game_window, rows, columns)
-        detector.enable_trace()
+        detector = BoardStateDetector(game_window, rows, columns, icon_size)
+        if DEBUG_SAVE_BOARD:
+            detector.enable_debug()
 
         hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
         win32gui.SetForegroundWindow(hwnd)
@@ -66,14 +71,15 @@ def main():
         if MODE == Mode.RealGame:
             # ボードの状態を画面から判定し、更新する
             window = capture.crop(game_window_position)
+            new_board = detector.get_board_from_image(window)
+            g.board.replace(new_board)
             if DEBUG_SAVE_BOARD:
                 window.save('capture/frame_%05d.png' % g.current_frame)
-            new_board = detector.get_board_from_image(window)
-            board.replace(new_board)
-
+                with open('capture/frame_%05d.txt' % g.current_frame, 'w') as f:
+                    f.write(g.board.serialize())
         solver.solve(g)
 
-    game.main_loop(proc, MODE)
+    game.main_loop(proc)
 
     exit(0)
 

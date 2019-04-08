@@ -99,9 +99,13 @@ class Board(object):
             return 0
         return max(np.where(self.board != Icon.Empty.value)[0])
 
-    def print(self):
+    def serialize(self) -> str:
+        output = []
         for i, y in enumerate(self.board, start=0):
-            print('%d: ' % i, end='')
-            for x in y:
-                print(Icon.to_char(Icon(x)), end='')
-            print()
+            line = [Icon.to_char(Icon(x)) for x in y]
+            output.append(''.join(line))
+        return '\n'.join(output)
+
+    def print(self):
+        for i, line in enumerate(self.serialize().splitlines(keepends=False)):
+            print('%2d: %s' % (i, line))

@@ -1,4 +1,7 @@
-Pillow==5.4.1
+Pillow==6.0.0
+pip==19.0.3
+setuptools<=41.0.0
 pywin32==224
 numpy==1.16.2
 pytest==4.4.0
+opencv-python==4.0.0.21

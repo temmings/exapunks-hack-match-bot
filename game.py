@@ -27,11 +27,16 @@ class Game(Traceable):
         self.__is_alive = True
 
     def main_loop(self, callback: typing.Callable, mode: Mode):
+        if mode == Mode.VirtualGame:
+            self.add_generate_row(self.board)
+            self.add_generate_row(self.board)
+            self.add_generate_row(self.board)
         while self.is_alive:
             # 1秒毎に行が追加される
             if mode == Mode.VirtualGame:
                 if 0 == self.current_frame % self.FRAME_RATE:
-                    self.add_generate_row(self.board)
+                    if not self.add_generate_row(self.board):
+                        break
                 self.score += self.effect(self.board)
             self.trace('process time: %f' % self.process_time, end=', ')
             self.trace('game frame: %d' % self.frame.current, end=', ')
@@ -44,8 +49,6 @@ class Game(Traceable):
             self.frame.count_up()
             if self.frame.process_time < self.FRAME_SECOND:
                 time.sleep(self.FRAME_SECOND - self.process_time)
-            self.__is_alive = self.__is_alive and \
-                              (self.board.board != Icon.Empty.value).any()
         self.trace('game over.')
 
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
@@ -95,14 +98,15 @@ class Game(Traceable):
             score += self.SCORE_BASE
         return score
 
-    def add_generate_row(self, board: Board):
+    def add_generate_row(self, board: Board) -> bool:
         new_row = board.random_row(rows=1)
         new_board = np.vstack((new_row, board.board))
         if (board.board[-1, :] == Icon.Empty.value).all():
             new_board = np.delete(new_board, -1, axis=0)
             board.replace(new_board)
-        else:
-            self.__is_alive = False
+            return True
+        self.__is_alive = False
+        return False
 
     @property
     def is_alive(self) -> bool:

@@ -17,7 +17,7 @@ ScoreWithActions = namedtuple('ScoreWithActions', ('score', 'actions'))
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=3):
+    def solve(self, game: Game, depth=5):
         score = self.eval(game)
         self.trace('board score: %d' % score)
         score, actions = self.__solve(
@@ -109,4 +109,4 @@ class HandmadeSolver(Solver):
             count = list(neighbors).count(True)
             score += count * 2
 
-        return score + random.randrange(0, 10)
+        return score + random.randrange(-5, 5)

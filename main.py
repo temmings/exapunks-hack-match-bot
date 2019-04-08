@@ -24,7 +24,10 @@ def main():
     rows, columns = 9, 7
 
     board = Board(rows, columns)
-    controller = Win32Controller(INPUT_INTERVAL_SECOND) if MODE == Mode.RealGame else VoidController()
+    if MODE == Mode.RealGame:
+        controller = Win32Controller(INPUT_INTERVAL_SECOND)
+    else:
+        controller = VoidController()
     char = Character(board, controller=controller)
     char.enable_trace()
     game = Game(board, char)

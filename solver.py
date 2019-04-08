@@ -1,15 +1,7 @@
 from game import Game
+from traceable import Traceable
 
 
-class Solver(object):
-    debug = False
-
+class Solver(Traceable):
     def solve(self, game: Game):
         raise NotImplemented('')
-
-    def enable_debug(self):
-        self.debug = True
-
-    def trace(self, msg, end='\n'):
-        if self.debug:
-            print(msg, end=end)

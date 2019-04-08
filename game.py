@@ -8,17 +8,17 @@ from character import Character
 from frame_counter import FrameCounter
 from icon import Icon, IconType, IconTypeDict, IconBombEraseDict
 from mode import Mode
+from traceable import Traceable
 
 Score = typing.NewType('Score', int)
 
 
-class Game(object):
+class Game(Traceable):
     FRAME_RATE = 15
     FRAME_SECOND = 1.0 / FRAME_RATE
     SCORE_BASE = 100
 
     def __init__(self, board: Board, char: Character):
-        self.debug = False
         self.frame = FrameCounter()
         self.board = board
         self.char = char
@@ -107,13 +107,6 @@ class Game(object):
     @property
     def is_alive(self) -> bool:
         return self.__is_alive
-
-    def trace(self, msg, end='\n'):
-        if self.debug:
-            print(msg, end=end)
-
-    def enable_debug(self):
-        self.debug = True
 
     @property
     def current_frame(self) -> int:

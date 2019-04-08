@@ -1,16 +1,15 @@
 from board import Board
 from icon import Icon
+from traceable import Traceable
 from void_controller import VoidController
 
 
-class Character(object):
+class Character(Traceable):
     MIN_POSITION = 0
     MAX_POSITION = 6
     # position range (0, 6)
     __position = 3
     _having_icon = None
-
-    debug = False
 
     def __init__(self, board: Board, controller=VoidController()):
         self.board = board
@@ -23,13 +22,6 @@ class Character(object):
     @property
     def having_icon(self):
         return self._having_icon
-
-    def trace(self, msg, end='\n'):
-        if self.debug:
-            print(msg, end=end)
-
-    def enable_debug(self):
-        self.debug = True
 
     def left(self):
         assert(self.MIN_POSITION < self.position)

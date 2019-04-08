@@ -3,11 +3,12 @@ from PIL import Image, ImageChops
 
 from icon import Icon, IconFileDict
 from point import Point
+from traceable import Traceable
 
 RMSE_THRESHOLD = 0.10
 
 
-class BoardStateDetector(object):
+class BoardStateDetector(Traceable):
     debug = False
 
     # 各アイコンのヒストグラムを事前に取得しておく
@@ -29,9 +30,6 @@ class BoardStateDetector(object):
         for n in range(self.row_size):
             new_board.append(self._detect_column(image, n))
         return np.asarray(new_board, dtype=np.uint16)
-
-    def enable_debug(self):
-        self.debug = True
 
     def _detect_column(self, image: Image, row_index: int) -> list:
         detect_cols = []

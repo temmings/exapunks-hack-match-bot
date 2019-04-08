@@ -26,13 +26,13 @@ def main():
     board = Board(rows, columns)
     controller = Win32Controller(INPUT_INTERVAL_SECOND) if MODE == Mode.RealGame else VoidController()
     char = Character(board, controller=controller)
-    char.enable_debug()
+    char.enable_trace()
     game = Game(board, char)
-    game.enable_debug()
+    game.enable_trace()
 
     solver = HandmadeSolver()
     #solver = RandomSolver()
-    solver.enable_debug()
+    solver.enable_trace()
 
     if MODE == Mode.RealGame:
         import win32gui
@@ -51,7 +51,7 @@ def main():
 
         game_window = capture.crop(game_window_position)
         detector = BoardStateDetector(game_window, rows, columns)
-        detector.enable_debug()
+        detector.enable_trace()
 
         hwnd = win32gui.FindWindowEx(0, 0, 0, WINDOW_NAME)
         win32gui.SetForegroundWindow(hwnd)

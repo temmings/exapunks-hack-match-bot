@@ -52,8 +52,3 @@ class TestBoardStateDetector3(TestCase):
         self.assertListEqual(
             [Icon.Empty, Icon.Empty, Icon.Green, Icon.Empty, Icon.Empty, Icon.Empty, Icon.BombYellow],
             self.detector.detect_column(self.image, 7))
-
-    def test_detect_column8(self):
-        self.assertListEqual(
-            [Icon.Empty, Icon.Empty, Icon.Green, Icon.Empty, Icon.Empty, Icon.Empty, Icon.Pink],
-            self.detector.detect_column(self.image, 8))

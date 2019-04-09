@@ -10,7 +10,7 @@ from traceable import Traceable
 
 
 class BoardStateDetector(Traceable):
-    RMSE_THRESHOLD = 0.09
+    RMSE_THRESHOLD = 0.084
 
     def __init__(self, image: Image, row_size: int, column_size: int, icon_size: Point):
         self.image = image

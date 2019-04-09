@@ -17,7 +17,7 @@ ScoreWithActions = namedtuple('ScoreWithActions', ('score', 'actions'))
 
 
 class HandmadeSolver(Solver):
-    def solve(self, game: Game, depth=3):
+    def solve(self, game: Game, depth=2):
         score = self.eval(game)
         self.trace('board score: %d' % score)
         score, actions = self.__solve(

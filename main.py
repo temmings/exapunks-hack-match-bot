@@ -17,11 +17,11 @@ MODE = Mode.RealGame
 #MODE = Mode.VirtualGame
 DEBUG_SAVE_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'
-INPUT_INTERVAL_SECOND = InputIntervalSecond(0.050)
+INPUT_INTERVAL_SECOND = InputIntervalSecond(0.060)
 
 
 def main():
-    rows, columns = 9, 7
+    rows, columns = 10, 7
 
     board = Board(rows, columns)
     if MODE == Mode.RealGame:
@@ -50,7 +50,7 @@ def main():
             x0 = start_point.x
             y0 = start_point.y
             x1 = x0 + icon_size.x * columns
-            y1 = x0 + icon_size.y * rows
+            y1 = y0 + icon_size.y * rows
             game_window_position = (x0, y0, x1, y1)
             # score_window = (828, 251, 1237, 717)
         else:

@@ -2,6 +2,7 @@ import typing
 
 import numpy as np
 from PIL import Image, ImageChops
+import cv2 as cv
 
 from icon import Icon, IconFileDict
 from point import Point
@@ -9,7 +10,7 @@ from traceable import Traceable
 
 
 class BoardStateDetector(Traceable):
-    RMSE_THRESHOLD = 0.15
+    RMSE_THRESHOLD = 0.09
 
     def __init__(self, image: Image, row_size: int, column_size: int, icon_size: Point):
         self.image = image
@@ -23,14 +24,14 @@ class BoardStateDetector(Traceable):
             k: self.get_histogram(Image.open(v)) for k, v in IconFileDict.items()
         }
 
-        import cv2 as cv
+        # アイコンのヘッドマークを探す
         im = np.array(image.convert('L'))
-        template = cv.imread('test/__icon_under_mark.grey.png',  cv.IMREAD_GRAYSCALE)
-        result = cv.matchTemplate(im, template, cv.TM_SQDIFF, None)
-        offset = (np.unravel_index(result.argmin(), result.shape))
-        self.offset = (0, 0)
-        if offset[0] == 1:
-            self.offset = (offset[0], offset[1])
+        template = cv.imread('test/__icon_headmark.bmp',  cv.IMREAD_GRAYSCALE)
+        found = cv.matchTemplate(im, template, cv.TM_SQDIFF)
+        offset_y = np.unravel_index(found.argmin(), found.shape)[0]
+        # 見付けた場所を基準にYオフセットを調整
+        self.offset_y = offset_y % icon_size.y
+        self.enable_debug()
 
     def enable_debug(self):
         self.debug = True
@@ -44,8 +45,8 @@ class BoardStateDetector(Traceable):
     def detect_column(self, image: Image, row_index: int) -> typing.List[Icon]:
         detect_cols = []
         for n in range(self.column_size):
-            x0 = self.offset[0] + self.icon_size.x * n
-            y0 = self.offset[1] + self.icon_size.y * row_index
+            x0 = self.icon_size.x * n
+            y0 = self.icon_size.y * row_index + self.offset_y
             x1 = x0 + self.icon_size.x
             y1 = y0 + self.icon_size.y
             im_icon = image.crop((x0, y0, x1, y1))
@@ -71,7 +72,8 @@ class BoardStateDetector(Traceable):
 
     @staticmethod
     def get_histogram(image: Image):
-        return np.bincount(np.asarray(image).ravel(), minlength=256)
+        return np.asanyarray(image.histogram())
+        #return np.bincount(np.asarray(image).ravel(), minlength=256)
 
     @staticmethod
     def get_rmse(a: Image, b: Image) -> float:

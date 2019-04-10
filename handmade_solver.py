@@ -1,12 +1,10 @@
-import random
+import copy
 import typing
 from collections import namedtuple
 from itertools import product
 
 import numpy as np
 
-from board import Board
-from character import Character
 from game import Game
 from icon import Icon
 from solver import Solver
@@ -38,39 +36,36 @@ class HandmadeSolver(Solver):
 
     def __solve(self, game: Game, depth: int, prev_score, actions: list) -> (EvalScore, typing.List[typing.Callable]):
         assert(0 <= depth)
-        if 0 == depth:
-            return prev_score, actions
 
         # 同一局面を迎えたら、メモ化したスコアとアクションを返却する
-        key = game.board.board.tobytes()
-        if key in self.memo_board:
-            memo = self.memo_board[key]
-            return memo.score, memo.actions
+        #key = (game.board.board.tobytes(), game.char.having_icon)
+        #if key in self.memo_board:
+        #    memo = self.memo_board[key]
+        #    return memo.score, memo.actions
 
         candidates = {}
         for action in [action(n) for action, n in product(self.CAN_ACTIONS, range(game.columns))]:
             # 思考用のゲームボードを作成
-            board = Board(game.rows, game.columns)
-            board.replace(np.array(game.board.board, copy=True))
-            char = Character(board)
-            #char.enable_trace()
-            vgame = Game(board, char)
-            char._having_icon = game.char.having_icon
-            #vgame.enable_trace()
-            action(vgame)
-            game_score = vgame.effect(vgame.board)
-            score = self.eval(vgame)
-            #self.trace(score)
-            candidates[score] = (vgame, actions.copy() + [action])
+            state = game.copy()
+            action(state)
+            game_score = state.effect(state.board)
+            eval_score = self.eval(state)
+            score = prev_score + eval_score
 
-        better_score = max(candidates.keys())
-        better_state, better_actions = candidates[better_score]
+            if 0 < depth:
+                return self.__solve(
+                    state,
+                    depth=depth-1,
+                    prev_score=score,
+                    actions=copy.deepcopy(actions) + [action])
+            else:
+                actions = actions.copy() + [action]
+            candidates[score] = (state, actions)
 
-        score, actions = self.__solve(
-            better_state, depth=depth - 1,
-            prev_score=better_score, actions=better_actions)
+        score = max(candidates.keys())
+        state, actions = candidates[score]
 
-        key = better_state.board.board.tobytes()
+        key = (state.board.board.tobytes(), game.char.having_icon)
         self.memo_board[key] = ScoreWithActions(score, actions)
         return score, actions
 
@@ -112,4 +107,4 @@ class HandmadeSolver(Solver):
             count = list(neighbors).count(True)
             score += count * 2
 
-        return score + random.randrange(-5, 5)
+        return score

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 
 from icon import Icon
@@ -11,7 +12,7 @@ class Board(object):
     def __init__(self, row_size: int, column_size: int):
         self.row_size = row_size
         self.column_size = column_size
-        self.__board: np.ndarray = self.init(row_size, column_size)
+        self.__board = self.init(row_size, column_size)
 
     @staticmethod
     def init(row_size: int, column_size: int) -> np.ndarray:
@@ -109,3 +110,8 @@ class Board(object):
     def print(self):
         for i, line in enumerate(self.serialize().splitlines(keepends=False)):
             print('%2d: %s' % (i, line))
+
+    def copy(self) -> Board:
+        new_board = Board(self.row_size, self.column_size)
+        new_board.replace(np.array(self.board, copy=True))
+        return new_board

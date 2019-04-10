@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 import typing
 
@@ -34,7 +35,8 @@ class Game(Traceable):
             self.add_generate_row(self.board)
         while self.is_alive:
             self.trace('\ngame board:')
-            self.board.print()
+            if self._enable_trace:
+                self.board.print()
             self.trace('')
             # 1秒毎に行が追加される
             if self.mode == Mode.VirtualGame:
@@ -64,11 +66,11 @@ class Game(Traceable):
         return self.effect(board, prev_board, multiply=multiply+1, score=score)
 
     def erase_icon(self, board: Board, icon: Icon, icon_type: IconType) -> Score:
-        ys, xs = np.where(board.board == icon)
+        b = board.board
+        ys, xs = np.where(b == icon)
         if ys.size == 0:
             return Score(0)
         count = 1
-        b = board.board
         score = Score(0)
         erase_candidates = np.zeros((self.rows, self.columns), dtype=bool)
         for y, x in zip(ys, xs):
@@ -105,6 +107,10 @@ class Game(Traceable):
         if (board.board[-1, :] == Icon.Empty.value).all():
             new_board = np.delete(new_board, -1, axis=0)
             board.replace(new_board)
+            self.trace('\nnew game board (append row):')
+            if self._enable_trace:
+                board.print()
+            self.trace('')
             return True
         self.__is_alive = False
         return False
@@ -121,3 +127,8 @@ class Game(Traceable):
     def process_time(self) -> int:
         return self.frame.process_time
 
+    def copy(self) -> Game:
+        new_board = self.board.copy()
+        new_char = Character(new_board)
+        new_char._having_icon = self.char.having_icon
+        return Game(new_board, new_char)

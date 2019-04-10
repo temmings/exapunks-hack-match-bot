@@ -13,11 +13,11 @@ from point import Point
 from void_controller import VoidController
 from win32controller import Win32Controller, InputIntervalSecond
 
-MODE = Mode.RealGame
-#MODE = Mode.VirtualGame
+#MODE = Mode.RealGame
+MODE = Mode.VirtualGame
 DEBUG_SAVE_BOARD = True
 WINDOW_NAME = 'EXAPUNKS'
-INPUT_INTERVAL_SECOND = InputIntervalSecond(0.060)
+INPUT_INTERVAL_SECOND = InputIntervalSecond(0.080)
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
 
     solver = HandmadeSolver()
     #solver = RandomSolver()
-    solver.enable_trace()
+    #solver.enable_trace()
 
     if MODE == Mode.RealGame:
         import win32gui

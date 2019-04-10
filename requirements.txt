@@ -1,3 +1,4 @@
+dill
 Pillow==6.0.0
 pip==19.0.3
 setuptools==41.0.0

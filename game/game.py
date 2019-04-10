@@ -15,7 +15,7 @@ Score = typing.NewType('Score', int)
 
 
 class Game(Traceable):
-    FRAME_RATE = 15
+    FRAME_RATE = 60
     FRAME_SECOND = 1.0 / FRAME_RATE
     SCORE_BASE = 100
 
@@ -49,9 +49,9 @@ class Game(Traceable):
             self.trace('game score: %d' % self.score)
             callback(self)
             self.frame.count_up()
-            if self.mode == Mode.VirtualGame:
-                if self.frame.process_time < self.FRAME_SECOND:
-                    time.sleep(self.FRAME_SECOND - self.process_time)
+            #if self.mode == Mode.VirtualGame:
+            #    if self.frame.process_time < self.FRAME_SECOND:
+            #        time.sleep(self.FRAME_SECOND - self.process_time)
         self.trace('game over.')
 
     def effect(self, board: Board, prev_board=None, multiply=1, score=Score(0)) -> Score:
@@ -102,7 +102,10 @@ class Game(Traceable):
         return score
 
     def add_generate_row(self, board: Board) -> bool:
-        new_row = board.random_row(rows=1)
+        if 0 == self.current_frame % (self.FRAME_RATE * 10):
+            new_row = board.random_row(rows=1, has_bomb=True)
+        else:
+            new_row = board.random_row(rows=1)
         new_board = np.vstack((new_row, board.board))
         if (board.board[-1, :] == Icon.Empty.value).all():
             new_board = np.delete(new_board, -1, axis=0)
@@ -132,3 +135,14 @@ class Game(Traceable):
         new_char = Character(new_board)
         new_char._having_icon = self.char.having_icon
         return Game(new_board, new_char)
+
+    @property
+    def __key(self):
+        """ゲームの局面を再現・表現可能なキー"""
+        return self.board.board.tobytes(), self.char.having_icon
+
+    def __hash__(self):
+        return hash(self.__key)
+
+    def __eq__(self, other):
+        return isinstance(self, type(other)) and self.__key == other.__key

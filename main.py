@@ -25,12 +25,13 @@ def main():
         controller = VoidController()
     char = Character(board, controller=controller)
     char.enable_trace()
-    game = Game(board, char)
+    game = Game(board, char, mode=MODE)
     game.enable_trace()
 
-    solver = HandmadeSolver()
-    #solver = RandomSolver()
-    #solver.enable_trace()
+    solver = HandmadeSolver(
+        use_memo=True,
+        store_memo=(MODE == Mode.VirtualGame))
+    solver.enable_trace()
 
     if MODE == Mode.RealGame:
         import win32gui
@@ -46,6 +47,7 @@ def main():
             x1 = x0 + icon_size.x * columns
             y1 = y0 + icon_size.y * rows
             game_window_position = (x0, y0, x1, y1)
+            #game_window_position = (370, 138, 790, 738)
             # score_window = (828, 251, 1237, 717)
         else:
             raise NotImplemented()
@@ -62,7 +64,7 @@ def main():
 
     # main loop
     def proc(g: Game):
-        if MODE == Mode.RealGame:
+        if g.mode == Mode.RealGame:
             # ボードの状態を画面から判定し、更新する
             window = capture.crop(game_window_position)
             new_board = detector.get_board_from_image(window)

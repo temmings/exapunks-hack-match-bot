@@ -4,11 +4,11 @@ import typing
 
 import numpy as np
 
-from board import Board
-from character import Character
-from frame_counter import FrameCounter
-from icon import Icon, IconType, IconTypeDict, IconBombEraseDict
-from mode import Mode
+from game.board import Board
+from game.character import Character
+from game.icon import Icon, IconType, IconTypeDict, IconBombEraseDict
+from game.frame_counter import FrameCounter
+from game.mode import Mode
 from traceable import Traceable
 
 Score = typing.NewType('Score', int)

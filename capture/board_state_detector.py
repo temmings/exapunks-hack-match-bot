@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image, ImageChops
 import cv2 as cv
 
-from icon import Icon, IconFileDict
+from game.icon import Icon, IconFileDict
 from point import Point
 from traceable import Traceable
 
@@ -51,7 +51,7 @@ class BoardStateDetector(Traceable):
             y1 = y0 + self.icon_size.y
             im_icon = image.crop((x0, y0, x1, y1))
             if self.debug:
-                filename = 'capture/icon-%d-%d.png' % (row_index, n)
+                filename = 'tmp/icon-%d-%d.png' % (row_index, n)
                 im_icon.save(filename)
             icon = self.detect_icon(im_icon)
             detect_cols.append(icon)

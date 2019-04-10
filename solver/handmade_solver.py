@@ -5,8 +5,7 @@ from itertools import product
 
 import numpy as np
 
-from game import Game
-from icon import Icon
+from game import Game, Icon
 from solver import Solver
 
 Score = typing.NewType('Score', int)

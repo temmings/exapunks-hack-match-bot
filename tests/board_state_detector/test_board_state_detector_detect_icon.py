@@ -2,8 +2,8 @@ from unittest import TestCase
 
 from PIL import Image
 
-from board_state_detector import BoardStateDetector
-from icon import Icon
+from capture import BoardStateDetector
+from game import Icon
 from point import Point
 
 

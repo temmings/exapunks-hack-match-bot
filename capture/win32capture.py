@@ -4,7 +4,8 @@ from ctypes import windll
 
 from PIL import Image
 
-from capture import WindowSize, Capture
+from capture.capture import Capture
+from capture.window_size import WindowSize
 
 
 class Win32Capture(Capture):

@@ -3,15 +3,10 @@
 #
 import time
 
-from board import Board
-from board_state_detector import BoardStateDetector
-from character import Character
-from game import Game
-from handmade_solver import HandmadeSolver
-from mode import Mode
+from game import Game, Board, Character, Mode
+from solver import HandmadeSolver
+from controller import VoidController, Win32Controller, InputIntervalSecond
 from point import Point
-from void_controller import VoidController
-from win32controller import Win32Controller, InputIntervalSecond
 
 #MODE = Mode.RealGame
 MODE = Mode.VirtualGame
@@ -39,8 +34,7 @@ def main():
 
     if MODE == Mode.RealGame:
         import win32gui
-        from capture import WindowSize
-        from win32capture import Win32Capture
+        from capture import WindowSize, Win32Capture, BoardStateDetector
 
         capture = Win32Capture(WINDOW_NAME)
 
@@ -74,8 +68,8 @@ def main():
             new_board = detector.get_board_from_image(window)
             g.board.replace(new_board)
             if DEBUG_SAVE_BOARD:
-                window.save('capture/frame_%05d.png' % g.current_frame)
-                with open('capture/frame_%05d.txt' % g.current_frame, 'w') as f:
+                window.save('tmp/frame_%05d.png' % g.current_frame)
+                with open('tmp/frame_%05d.txt' % g.current_frame, 'w') as f:
                     f.write(g.board.serialize())
         solver.solve(g)
 

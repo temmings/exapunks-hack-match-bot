@@ -2,8 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from board import Board
-from icon import Icon
+from game import Board, Icon
 
 
 class TestBoard(TestCase):

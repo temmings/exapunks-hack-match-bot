@@ -1,7 +1,7 @@
-from board import Board
-from icon import Icon
+from game.board import Board
+from game.icon import Icon
 from traceable import Traceable
-from void_controller import VoidController
+from controller import VoidController
 
 
 class Character(Traceable):

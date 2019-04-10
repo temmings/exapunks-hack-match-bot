@@ -1,11 +1,6 @@
 from PIL import Image
 
 
-class WindowSize(object):
-    HD_PLUS = (1600, 900)
-    FULL_HD = (1920, 1080)
-
-
 class Capture(object):
     @property
     def window_size(self):

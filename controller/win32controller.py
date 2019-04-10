@@ -2,8 +2,8 @@ import time
 import typing
 from enum import Enum
 
-from controller import Controller
-from win32input import PressKey, ReleaseKey
+from .controller import Controller
+from .win32input import PressKey, ReleaseKey
 
 InputIntervalSecond = typing.NewType('InputIntervalSecond', float)
 

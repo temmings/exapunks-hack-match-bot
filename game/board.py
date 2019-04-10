@@ -1,7 +1,7 @@
 from __future__ import annotations
 import numpy as np
 
-from icon import Icon
+from game.icon import Icon
 
 
 class Board(object):

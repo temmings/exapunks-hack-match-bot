@@ -26,7 +26,7 @@ class BoardStateDetector(Traceable):
 
         # アイコンのヘッドマークを探す
         im = np.array(image.convert('L'))
-        template = cv.imread('test/__icon_headmark.bmp',  cv.IMREAD_GRAYSCALE)
+        template = cv.imread('images/__icon_headmark.bmp',  cv.IMREAD_GRAYSCALE)
         found = cv.matchTemplate(im, template, cv.TM_SQDIFF)
         offset_y = np.unravel_index(found.argmin(), found.shape)[0]
         # 見付けた場所を基準にYオフセットを調整
@@ -80,12 +80,12 @@ class BoardStateDetector(Traceable):
         """
         Calculates the root mean square error (RSME) between two images
         reference: https://stackoverflow.com/questions/3098406/root-mean-square-difference-between-two-images-using-python-and-pil
-        >>> a = Image.open('test/icon_green.png')
-        >>> b = Image.open('test/icon_green.png')
+        >>> a = Image.open('images/icon_green.png')
+        >>> b = Image.open('images/icon_green.png')
         >>> BoardStateDetector.get_rmse(a, b)
         0.0
-        >>> a = Image.open('test/icon_green.png')
-        >>> b = Image.open('test/icon_red.png')
+        >>> a = Image.open('images/icon_green.png')
+        >>> b = Image.open('images/icon_red.png')
         >>> rms = BoardStateDetector.get_rmse(a, b)
         >>> 0.0 < rms
         True

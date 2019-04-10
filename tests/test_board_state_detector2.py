@@ -9,7 +9,7 @@ from point import Point
 
 class TestBoardStateDetector2(TestCase):
     def setUp(self):
-        self.image = Image.open('test/board2.png')
+        self.image = Image.open('images/board2.png')
         self.detector = BoardStateDetector(
             self.image, row_size=9, column_size=7, icon_size=Point(60, 60))
 

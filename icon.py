@@ -75,15 +75,14 @@ IconBombEraseDict = {
 }
 
 IconFileDict = {
-    Icon.Green: 'test/icon_green.png',
-    Icon.Pink: 'test/icon_pink.png',
-    Icon.Purple: 'test/icon_purple.png',
-    Icon.Red: 'test/icon_red.png',
-    Icon.Yellow: 'test/icon_yellow.png',
-
-    Icon.BombGreen: 'test/icon_bomb_green.png',
-    Icon.BombPink: 'test/icon_bomb_pink.png',
-    Icon.BombPurple: 'test/icon_bomb_purple.png',
-    Icon.BombRed: 'test/icon_bomb_red.png',
-    Icon.BombYellow: 'test/icon_bomb_yellow.png',
+    Icon.Green: 'images/icon_green.png',
+    Icon.Pink: 'images/icon_pink.png',
+    Icon.Purple: 'images/icon_purple.png',
+    Icon.Red: 'images/icon_red.png',
+    Icon.Yellow: 'images/icon_yellow.png',
+    Icon.BombGreen: 'images/icon_bomb_green.png',
+    Icon.BombPink: 'images/icon_bomb_pink.png',
+    Icon.BombPurple: 'images/icon_bomb_purple.png',
+    Icon.BombRed: 'images/icon_bomb_red.png',
+    Icon.BombYellow: 'images/icon_bomb_yellow.png',
 }
